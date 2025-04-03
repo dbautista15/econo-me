@@ -90,16 +90,19 @@ class Econome {
 		});
 		console.log(`Unique Categories in Expenses: ${uniqueCategories}`);
 	}
-	getTotalExpenses(){
-		return this.expenses.reduce((toalt,expense)=> total+Object.values(expense)[0],0);
+	getTotalExpenses() {
+		// Fix: 'toalt' typo changed to 'total'
+		return this.expenses.reduce((total, expense) => total + Object.values(expense)[0], 0);
 	}
-	getCategoryTotal(category){
-		return this.expense.reduce((total,expense)=>{
-			if(expense[category]){
+	
+	getCategoryTotal(category) {
+		// Fix: 'expense' typo changed to 'expenses'
+		return this.expenses.reduce((total, expense) => {
+			if (expense[category]) {
 				return total + expense[category];
 			}
 			return total;
-		},0);
+		}, 0);
 	}
 	handleInvalidInputGracefully(){
 		return this.spendingLimit >= 0;

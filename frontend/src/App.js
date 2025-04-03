@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-
 const App = () => {
     // State for various data
     const [expenses, setExpenses] = useState([]);
@@ -35,46 +34,98 @@ const App = () => {
         { name: 'Jun', expenses: 1250, income: 3200 },
     ];
 
-    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28DFF'];
+    // API base URL
+    const API_BASE_URL = 'http://localhost:5002/api';
 
-    // Function to add a new expense
-    const handleAddExpense = async (e) => {
-        e.preventDefault();
+    // Fetch expenses when component mounts
+    useEffect(() => {
+        fetchExpenses();
+        fetchBudgets();
+    }, []);
 
-        if (!amount || amount <= 0) {
-            showMessage('Please enter a valid amount', 'error');
-            return;
-        }
-
+    // Function to fetch expenses from the API
+    const fetchExpenses = async () => {
         setLoading(true);
-
         try {
-            // In a real app, you'd call your API here
-            // const response = await fetch('http://localhost:5001/api/expenses', {
-            //   method: 'POST',
-            //   headers: { 'Content-Type': 'application/json' },
-            //   body: JSON.stringify({ category, amount: parseFloat(amount) })
-            // });
-
-            // For demo purposes, we'll just update the state directly
-            const newExpenses = [...expenses, { category, amount: parseFloat(amount) }];
-            setExpenses(newExpenses);
+            const response = await fetch(`${API_BASE_URL}/expenses`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch expenses');
+            }
+            const data = await response.json();
+            setExpenses(data);
 
             // Update expenses by category
-            setExpensesByCategory({
-                ...expensesByCategory,
-                [category]: expensesByCategory[category] + parseFloat(amount)
+            const categoryTotals = {
+                Food: 0,
+                Gas: 0,
+                MortgageRent: 0,
+                Utilities: 0,
+                Wants: 0
+            };
+
+            data.forEach(expense => {
+                categoryTotals[expense.category] = (categoryTotals[expense.category] || 0) + parseFloat(expense.amount);
             });
 
-            showMessage('Expense added successfully!', 'success');
-            setAmount('');
+            setExpensesByCategory(categoryTotals);
         } catch (error) {
-            showMessage('Failed to add expense', 'error');
+            showMessage(`Error fetching expenses: ${error.message}`, 'error');
         } finally {
             setLoading(false);
         }
     };
 
+    // Function to fetch budgets from the API
+    const fetchBudgets = async () => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/budgets`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch budgets');
+            }
+            const data = await response.json();
+
+            // Set spending limit based on total of all budget limits
+            if (data.length > 0) {
+                const totalLimit = data.reduce((sum, budget) => sum + parseFloat(budget.limit_amount), 0);
+                setSpendingLimit(totalLimit);
+            }
+        } catch (error) {
+            showMessage(`Error fetching budgets: ${error.message}`, 'error');
+        }
+    };
+
+// Function to add a new expense
+const handleAddExpense = async (e) => {
+    e.preventDefault();
+
+    if (!amount || amount <= 0) {
+        showMessage('Please enter a valid amount', 'error');
+        return;
+    }
+
+    setLoading(true);
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/expenses`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ category, amount: parseFloat(amount) })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to add expense');
+        }
+
+        // Refresh expenses after adding new one
+        fetchExpenses();
+        showMessage('Expense added successfully!', 'success');
+        setAmount('');
+    } catch (error) {
+        showMessage(`Failed to add expense: ${error.message}`, 'error');
+    } finally {
+        setLoading(false);
+    }
+};
     // Helper for showing messages
     const showMessage = (message, type) => {
         if (type === 'success') {
@@ -94,10 +145,46 @@ const App = () => {
     };
 
     // Function to update spending limit
-    const handleUpdateSpendingLimit = (e) => {
+    const handleUpdateSpendingLimit = async (e) => {
         e.preventDefault();
-        setSpendingLimit(parseFloat(e.target.limit.value));
-        showMessage('Spending limit updated successfully!', 'success');
+        const newLimit = parseFloat(e.target.limit.value);
+
+        try {
+            // First, check if a budget for "Total" exists
+            const response = await fetch(`${API_BASE_URL}/budgets`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch budgets');
+            }
+
+            const budgets = await response.json();
+            const totalBudget = budgets.find(b => b.category === 'Total');
+
+            let updateResponse;
+            if (totalBudget) {
+                // Update existing budget
+                updateResponse = await fetch(`${API_BASE_URL}/budgets/${totalBudget.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ limit: newLimit })
+                });
+            } else {
+                // Create new budget
+                updateResponse = await fetch(`${API_BASE_URL}/budgets`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ category: 'Total', limit: newLimit })
+                });
+            }
+
+            if (!updateResponse.ok) {
+                throw new Error('Failed to update spending limit');
+            }
+
+            setSpendingLimit(newLimit);
+            showMessage('Spending limit updated successfully!', 'success');
+        } catch (error) {
+            showMessage(`Error updating spending limit: ${error.message}`, 'error');
+        }
     };
 
     // Function to update savings goal
@@ -210,6 +297,9 @@ const App = () => {
                             </div>
                         </div>
 
+                        {/* Rest of your UI remains the same */}
+                        {/* ... */}
+
                         {/* Expense Distribution */}
                         <div className="bg-white p-6 rounded-lg shadow-md">
                             <h2 className="text-xl font-semibold mb-4">Expense Distribution</h2>
@@ -243,20 +333,20 @@ const App = () => {
                                 <div className="overflow-x-auto">
                                     <table className="w-full">
                                         <thead>
-                                        <tr className="bg-gray-50">
-                                            <th className="px-4 py-2 text-left">Month</th>
-                                            <th className="px-4 py-2 text-right">Income</th>
-                                            <th className="px-4 py-2 text-right">Expenses</th>
-                                        </tr>
+                                            <tr className="bg-gray-50">
+                                                <th className="px-4 py-2 text-left">Month</th>
+                                                <th className="px-4 py-2 text-right">Income</th>
+                                                <th className="px-4 py-2 text-right">Expenses</th>
+                                            </tr>
                                         </thead>
                                         <tbody>
-                                        {monthlyData.map((month, index) => (
-                                            <tr key={index} className="border-t">
-                                                <td className="px-4 py-2">{month.name}</td>
-                                                <td className="px-4 py-2 text-right">${month.income.toFixed(2)}</td>
-                                                <td className="px-4 py-2 text-right">${month.expenses.toFixed(2)}</td>
-                                            </tr>
-                                        ))}
+                                            {monthlyData.map((month, index) => (
+                                                <tr key={index} className="border-t">
+                                                    <td className="px-4 py-2">{month.name}</td>
+                                                    <td className="px-4 py-2 text-right">${month.income.toFixed(2)}</td>
+                                                    <td className="px-4 py-2 text-right">${month.expenses.toFixed(2)}</td>
+                                                </tr>
+                                            ))}
                                         </tbody>
                                     </table>
                                 </div>
@@ -322,26 +412,26 @@ const App = () => {
                                 <div className="overflow-x-auto">
                                     <table className="w-full">
                                         <thead>
-                                        <tr className="bg-gray-50">
-                                            <th className="px-4 py-2 text-left">Category</th>
-                                            <th className="px-4 py-2 text-right">Amount</th>
-                                        </tr>
+                                            <tr className="bg-gray-50">
+                                                <th className="px-4 py-2 text-left">Category</th>
+                                                <th className="px-4 py-2 text-right">Amount</th>
+                                            </tr>
                                         </thead>
                                         <tbody>
-                                        {expenses.map((expense, index) => (
-                                            <tr key={index} className="border-t">
-                                                <td className="px-4 py-3">{expense.category}</td>
-                                                <td className="px-4 py-3 text-right">${expense.amount.toFixed(2)}</td>
-                                            </tr>
-                                        ))}
+                                            {expenses.map((expense, index) => (
+                                                <tr key={index} className="border-t">
+                                                    <td className="px-4 py-3">{expense.category}</td>
+                                                    <td className="px-4 py-3 text-right">${expense.amount.toFixed(2)}</td>
+                                                </tr>
+                                            ))}
                                         </tbody>
                                         <tfoot>
-                                        <tr className="border-t font-semibold">
-                                            <td className="px-4 py-3">Total</td>
-                                            <td className="px-4 py-3 text-right">
-                                                ${totalExpenses.toFixed(2)}
-                                            </td>
-                                        </tr>
+                                            <tr className="border-t font-semibold">
+                                                <td className="px-4 py-3">Total</td>
+                                                <td className="px-4 py-3 text-right">
+                                                    ${totalExpenses.toFixed(2)}
+                                                </td>
+                                            </tr>
                                         </tfoot>
                                     </table>
                                 </div>

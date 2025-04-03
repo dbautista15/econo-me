@@ -1,14 +1,19 @@
-const pool = require('../utils/db');
+const { pool } = require('../utils/db');
 
 const createExpenseTable = async () => {
-    await pool.query(`
-        CREATE TABLE IF NOT EXISTS expenses (
-            id SERIAL PRIMARY KEY,
-            category VARCHAR(255) NOT NULL,
-            amount NUMERIC NOT NULL
-        )
-    `);
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS expenses (
+                id SERIAL PRIMARY KEY,
+                category VARCHAR(255) NOT NULL,
+                amount NUMERIC NOT NULL
+            )
+        `);
+        console.log('Expenses table created successfully or already exists');
+    } catch (err) {
+        console.error('Error creating expenses table:', err);
+    }
 };
 
 createExpenseTable();
-module.exports = pool;
+module.exports = { createExpenseTable };
