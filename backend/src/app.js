@@ -2,7 +2,9 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const economeRoutes = require('./routes/routes');
-const authRoutes = require('./routes/authRoutes'); // Add this line
+const authRoutes = require('./routes/authRoutes');
+const settingsRoutes = require('./routes/settingsRoutes');
+const recurringRoutes = require('./routes/recurringRoutes');
 
 const app = express();
 
@@ -10,7 +12,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use('/api', economeRoutes);
-app.use('/api/auth', authRoutes); // Add this line
+app.use('/api/auth', authRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/recurring', recurringRoutes);
 
 // Root route
 app.get('/', (req, res) => {

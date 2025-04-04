@@ -1,10 +1,32 @@
-const app = require('./app');
+const express = require('express');
+const cors = require('cors');
 const { pool, testConnection } = require('./utils/db');
+
+// CORS configuration
+const corsOptions = {
+  origin: 'http://localhost:3000',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'Access-Control-Allow-Credentials'
+  ],
+  credentials: true
+};
+
+const app = express();
+
+// Apply CORS
+app.use(cors(corsOptions));
+app.use(express.json());
+
+// Require routes
+const routes = require('./routes/routes');
+app.use('/api', routes);
 
 // Test database connection
 testConnection().catch(err => {
     console.error('Failed to connect to the database:', err);
-    // Don't exit process here, allow app to start even if DB connection fails initially
 });
 
 // Require models to ensure tables are created

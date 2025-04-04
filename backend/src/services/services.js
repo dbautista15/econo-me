@@ -1,5 +1,3 @@
-
-
 class Econome {
 	constructor(){
 		this.income = 0;

@@ -2,7 +2,7 @@ import axios from 'axios';
 const API_BASE_URL = 'http://localhost:5000/api';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api', // Your backend API base URL
+  baseURL: 'http://localhost:3000/api', // Your backend API base URL
   headers: {
     'Content-Type': 'application/json'
   }
@@ -75,3 +75,52 @@ export const createBudget = async (category, amount) => {
   }
   return await response.json();
 };
+// frontend/src/utils/api.js - Add these new functions
+
+// User settings
+export const fetchUserSettings = async () => {
+	const response = await api.get('/settings');
+	return response.data;
+  };
+  
+  export const updateUserSettings = async (settingsData) => {
+	const response = await api.put('/settings', settingsData);
+	return response.data;
+  };
+  
+  // User profile
+  export const fetchUserProfile = async () => {
+	const response = await api.get('/auth/profile/details');
+	return response.data;
+  };
+  
+  export const updateUserProfile = async (profileData) => {
+	const response = await api.put('/auth/profile/details', profileData);
+	return response.data;
+  };
+  
+  // Recurring transactions
+  export const fetchRecurringTransactions = async () => {
+	const response = await api.get('/recurring');
+	return response.data;
+  };
+  
+  export const createRecurringTransaction = async (transactionData) => {
+	const response = await api.post('/recurring', transactionData);
+	return response.data;
+  };
+  
+  export const updateRecurringTransaction = async (id, transactionData) => {
+	const response = await api.put(`/recurring/${id}`, transactionData);
+	return response.data;
+  };
+  
+  export const deleteRecurringTransaction = async (id) => {
+	const response = await api.delete(`/recurring/${id}`);
+	return response.data;
+  };
+  
+  export const processRecurringTransactions = async () => {
+	const response = await api.post('/recurring/process');
+	return response.data;
+  };

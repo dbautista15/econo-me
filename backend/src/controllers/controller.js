@@ -5,34 +5,33 @@ const Econome = require('../services/services');
 const economeService = new Econome();
 
 exports.addExpense = async (req, res) => {
-    const { category, amount } = req.body;
+    const { category, amount, description, date } = req.body;
     try {
-        // Insert expense into the database
-        const result = await pool.query(
-            'INSERT INTO expenses (category, amount) VALUES ($1, $2) RETURNING *', 
-            [category, amount]
-        );
-        
-        // Update the service state
-        economeService.addExpense(category, amount);
-        
-        res.status(201).json({ 
-            message: 'Expense added successfully',
-            expense: result.rows[0]
-        });
+      // Insert expense into the database with user_id
+      const result = await pool.query(
+        'INSERT INTO expenses (user_id, category, amount, description, date) VALUES ($1, $2, $3, $4, $5) RETURNING *', 
+        [req.user.id, category, amount, description || null, date || new Date()]
+      );
+      
+      res.status(201).json({ 
+        message: 'Expense added successfully',
+        expense: result.rows[0]
+      });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+      res.status(500).json({ error: err.message });
     }
-};
-
-exports.getExpenses = async (req, res) => {
+  };
+  exports.getExpenses = async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM expenses ORDER BY id DESC');
-        res.status(200).json(result.rows);
+      const result = await pool.query(
+        'SELECT * FROM expenses WHERE user_id = $1 ORDER BY date DESC, id DESC',
+        [req.user.id]
+      );
+      res.status(200).json(result.rows);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+      res.status(500).json({ error: err.message });
     }
-};
+  };
 
 exports.updateExpense = async (req, res) => {
     const { id } = req.params;

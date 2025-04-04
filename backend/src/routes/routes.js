@@ -2,29 +2,45 @@ const express = require('express');
 const router = express.Router();
 const economeController = require('../controllers/controller');
 
+// CORS configuration
+const corsOptions = {
+  origin: 'http://localhost:3000', // Your frontend URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'Access-Control-Allow-Credentials'
+  ],
+  credentials: true
+};
+router.post('/auth/login', authController.login);
+router.post('/auth/register', authController.register);
+
+// Existing routes remain the same
 router.get('/db-check', async (req, res) => {
-	try {
-	  const client = await pool.connect();
-	  const tablesQuery = await client.query(`
-		SELECT table_name 
-		FROM information_schema.tables 
-		WHERE table_schema = 'public'
-	  `);
-	  
-	  const tables = tablesQuery.rows.map(row => row.table_name);
-	  client.release();
-	  
-	  res.status(200).json({
-		status: 'Database connection successful',
-		tables: tables
-	  });
-	} catch (err) {
-	  res.status(500).json({
-		status: 'Database connection failed',
-		error: err.message
-	  });
-	}
-  });
+  try {
+    const client = await pool.connect();
+    const tablesQuery = await client.query(`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public'
+    `);
+    
+    const tables = tablesQuery.rows.map(row => row.table_name);
+    client.release();
+    
+    res.status(200).json({
+      status: 'Database connection successful',
+      tables: tables
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: 'Database connection failed',
+      error: err.message
+    });
+  }
+});
+
 // Expense routes
 router.post('/expenses', economeController.addExpense);
 router.get('/expenses', economeController.getExpenses);

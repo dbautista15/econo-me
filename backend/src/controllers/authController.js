@@ -2,23 +2,29 @@ const { pool } = require('../utils/db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-// Simple helper to create user table if it doesn't exist
+
 const createUserTable = async () => {
-  try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        username VARCHAR(255) NOT NULL UNIQUE,
-        email VARCHAR(255) NOT NULL UNIQUE,
-        password VARCHAR(255) NOT NULL,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    console.log('Users table created successfully or already exists');
-  } catch (err) {
-    console.error('Error creating users table:', err);
-  }
-};
+	try {
+	  await pool.query(`
+		CREATE TABLE IF NOT EXISTS users (
+		  id SERIAL PRIMARY KEY,
+		  username VARCHAR(255) NOT NULL UNIQUE,
+		  email VARCHAR(255) NOT NULL UNIQUE,
+		  password VARCHAR(255) NOT NULL,
+		  first_name VARCHAR(255),
+		  last_name VARCHAR(255),
+		  avatar VARCHAR(255),
+		  currency VARCHAR(10) DEFAULT 'USD',
+		  date_format VARCHAR(20) DEFAULT 'MM/DD/YYYY',
+		  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+		  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+		)
+	  `);
+	  console.log('Users table created successfully or already exists');
+	} catch (err) {
+	  console.error('Error creating users table:', err);
+	}
+  };
 
 // Initialize the users table
 createUserTable();
@@ -138,7 +144,88 @@ exports.getProfile = async (req, res) => {
     res.status(500).json({ message: 'Server error while fetching profile' });
   }
 };
+// backend/src/controllers/authController.js - Add these new methods
 
+// Get user profile details
+exports.getProfileDetails = async (req, res) => {
+	try {
+	  const result = await pool.query(
+		'SELECT id, username, email, first_name, last_name, avatar, currency, date_format, created_at FROM users WHERE id = $1',
+		[req.user.id]
+	  );
+  
+	  if (result.rows.length === 0) {
+		return res.status(404).json({ message: 'User not found' });
+	  }
+  
+	  res.json({
+		user: result.rows[0]
+	  });
+	} catch (err) {
+	  console.error(err);
+	  res.status(500).json({ message: 'Server error while fetching profile details' });
+	}
+  };
+  
+  // Update user profile details
+  exports.updateProfileDetails = async (req, res) => {
+	const { first_name, last_name, avatar, currency, date_format } = req.body;
+  
+	try {
+	  // Build the dynamic query
+	  let updateQuery = 'UPDATE users SET ';
+	  const queryParams = [];
+	  const updateFields = [];
+	  let paramCounter = 1;
+	  
+	  if (first_name !== undefined) {
+		queryParams.push(first_name);
+		updateFields.push(`first_name = $${paramCounter++}`);
+	  }
+	  
+	  if (last_name !== undefined) {
+		queryParams.push(last_name);
+		updateFields.push(`last_name = $${paramCounter++}`);
+	  }
+	  
+	  if (avatar !== undefined) {
+		queryParams.push(avatar);
+		updateFields.push(`avatar = $${paramCounter++}`);
+	  }
+	  
+	  if (currency !== undefined) {
+		queryParams.push(currency);
+		updateFields.push(`currency = $${paramCounter++}`);
+	  }
+	  
+	  if (date_format !== undefined) {
+		queryParams.push(date_format);
+		updateFields.push(`date_format = $${paramCounter++}`);
+	  }
+	  
+	  // Add updated_at timestamp
+	  updateFields.push(`updated_at = CURRENT_TIMESTAMP`);
+	  
+	  // If no fields to update, return early
+	  if (updateFields.length === 0) {
+		return res.status(400).json({ message: 'No fields to update' });
+	  }
+	  
+	  updateQuery += updateFields.join(', ');
+	  queryParams.push(req.user.id);
+	  updateQuery += ` WHERE id = $${paramCounter} RETURNING id, username, email, first_name, last_name, avatar, currency, date_format, created_at`;
+	  
+	  const result = await pool.query(updateQuery, queryParams);
+	  
+	  res.json({
+		message: 'Profile updated successfully',
+		user: result.rows[0]
+	  });
+	} catch (err) {
+	  console.error(err);
+	  res.status(500).json({ message: 'Server error during profile update' });
+	}
+  };
 // Update user profile
 exports.updateProfile = async (req, res) => {
   const { username, email } = req.body;

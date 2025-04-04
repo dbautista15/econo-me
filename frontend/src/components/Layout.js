@@ -47,41 +47,57 @@ export const Header = () => {
   );
 };
 
+// frontend/src/components/Layout.js - Update the Navigation component
+
 export const Navigation = ({ activeTab, setActiveTab }) => {
-  const { isAuthenticated } = useAuth();
-  
-  if (!isAuthenticated) return null;
-  
-  return (
-    <div className="bg-white shadow">
-      <div className="container mx-auto px-4">
-        <nav className="flex">
-          <Link
-            to="/dashboard"
-            className={`px-4 py-4 font-medium ${activeTab === 'dashboard' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
-            onClick={() => setActiveTab('dashboard')}
-          >
-            Dashboard
-          </Link>
-          <Link
-            to="/expenses"
-            className={`px-4 py-4 font-medium ${activeTab === 'expenses' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
-            onClick={() => setActiveTab('expenses')}
-          >
-            Track Expenses
-          </Link>
-          <Link
-            to="/goals"
-            className={`px-4 py-4 font-medium ${activeTab === 'goals' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
-            onClick={() => setActiveTab('goals')}
-          >
-            Income & Goals
-          </Link>
-        </nav>
-      </div>
-    </div>
-  );
-};
+	const { isAuthenticated } = useAuth();
+	
+	if (!isAuthenticated) return null;
+	
+	return (
+	  <div className="bg-white shadow">
+		<div className="container mx-auto px-4">
+		  <nav className="flex flex-wrap">
+			<Link
+			  to="/dashboard"
+			  className={`px-4 py-4 font-medium ${activeTab === 'dashboard' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
+			  onClick={() => setActiveTab('dashboard')}
+			>
+			  Dashboard
+			</Link>
+			<Link
+			  to="/expenses"
+			  className={`px-4 py-4 font-medium ${activeTab === 'expenses' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
+			  onClick={() => setActiveTab('expenses')}
+			>
+			  Track Expenses
+			</Link>
+			<Link
+			  to="/goals"
+			  className={`px-4 py-4 font-medium ${activeTab === 'goals' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
+			  onClick={() => setActiveTab('goals')}
+			>
+			  Income & Goals
+			</Link>
+			<Link
+			  to="/recurring"
+			  className={`px-4 py-4 font-medium ${activeTab === 'recurring' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
+			  onClick={() => setActiveTab('recurring')}
+			>
+			  Recurring
+			</Link>
+			<Link
+			  to="/settings"
+			  className={`px-4 py-4 font-medium ${activeTab === 'settings' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
+			  onClick={() => setActiveTab('settings')}
+			>
+			  Settings
+			</Link>
+		  </nav>
+		</div>
+	  </div>
+	);
+  };
 
 export const NotificationMessage = ({ message, type }) => (
   <div className={`mb-4 p-4 ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'} rounded-md`}>
