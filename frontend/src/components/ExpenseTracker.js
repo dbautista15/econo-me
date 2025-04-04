@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { renderBarChart } from './Charts';
 import { validateExpenseForm, preparePieChartData } from '../utils/helpers';
 import { addExpense } from '../utils/api';
-import { useNavigate } from 'react-router-dom';
 
 const ExpenseTracker = ({
 	categories,
@@ -286,7 +285,8 @@ const ExpenseTracker = ({
 							<h3 className="text-sm text-gray-500">{category.name}</h3>
 							<p className="text-xl font-bold text-gray-800">${(+category.value).toFixed(2)}</p>
 						</div>
-					))}        </div>
+					))}
+				</div>
 			</div>
 		</div>
 	);

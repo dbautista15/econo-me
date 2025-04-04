@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { calculateSavings, calculateBudgetStatus } from '../utils/helpers';
 import { fetchBudgets, updateBudget, createBudget } from '../utils/api';
-import { useNavigate } from 'react-router-dom';
 
 const IncomeGoals = ({
 	income,
@@ -21,7 +20,7 @@ const IncomeGoals = ({
 
 	const totalExpenses = Object.values(expensesByCategory).reduce((sum, value) => sum + value, 0);
 	const savings = calculateSavings(income, totalExpenses);
-	const { budgetPercentage, isOverBudget } = calculateBudgetStatus(totalExpenses, spendingLimit);
+	const { isOverBudget } = calculateBudgetStatus(totalExpenses, spendingLimit);
 
 	const handleUpdateIncome = (e) => {
 		e.preventDefault();

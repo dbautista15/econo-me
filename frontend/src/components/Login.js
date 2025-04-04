@@ -1,8 +1,6 @@
-
 import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import api from '../utils/api';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +9,7 @@ const Login = () => {
   });
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const { email, password } = formData;
 
@@ -22,58 +21,70 @@ const Login = () => {
     e.preventDefault();
     setError('');
     
-    try {
-      const res = await axios.post('/api/auth/login', { email, password });
-      
-      // Save token to local storage
-      localStorage.setItem('token', res.data.token);
-      
-      // Set auth header for future requests
-      axios.defaults.headers.common['x-auth-token'] = res.data.token;
-      
-      // Redirect to dashboard
+    const result = await login(email, password);
+    
+    if (result.success) {
       navigate('/dashboard');
-    } catch (err) {
-      setError(err.response?.data?.msg || 'Login failed. Please try again.');
+    } else {
+      setError(result.message);
     }
   };
 
   return (
-    <div className="login-container">
-      <h1>Login</h1>
-      {error && <div className="alert alert-danger">{error}</div>}
-      <form onSubmit={onSubmit}>
-        <div className="form-group">
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={email}
-            onChange={onChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={password}
-            onChange={onChange}
-            required
-            minLength="8"
-          />
-        </div>
-        <button type="submit" className="btn btn-primary">Login</button>
-      </form>
-      <p>
-        Don't have an account? <a href="/register">Register</a>
-      </p>
-      <p>
-        <a href="/forgot-password">Forgot Password?</a>
-      </p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        <h1 className="text-2xl font-bold mb-6 text-center">Login</h1>
+        
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
+            {error}
+          </div>
+        )}
+        
+        <form onSubmit={onSubmit}>
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-2" htmlFor="email">
+              Email
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={email}
+              onChange={onChange}
+              required
+            />
+          </div>
+          <div className="mb-6">
+            <label className="block text-gray-700 mb-2" htmlFor="password">
+              Password
+            </label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={password}
+              onChange={onChange}
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-300"
+          >
+            Login
+          </button>
+        </form>
+        
+        <p className="mt-4 text-center text-gray-600">
+          Don't have an account? {' '}
+          <Link to="/register" className="text-blue-600 hover:underline">
+            Register
+          </Link>
+        </p>
+      </div>
     </div>
   );
 };
