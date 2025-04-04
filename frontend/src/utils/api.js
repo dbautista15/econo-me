@@ -1,8 +1,9 @@
 import axios from 'axios';
-const API_BASE_URL = 'http://localhost:5000/api';
+
+const API_BASE_URL = 'http://localhost:5003/api';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api', // Your backend API base URL
+  baseURL: 'http://localhost:5003/api',
   headers: {
     'Content-Type': 'application/json'
   }
@@ -27,19 +28,50 @@ export const fetchExpenses = async () => {
   }
   return await response.json();
 };
-
+export const fetchCategories = async () => {
+	try {
+	  const response = await axios.get('/api/categories'); // Adjust endpoint as needed
+	  return response.data;
+	} catch (error) {
+	  console.error('Error fetching categories', error);
+	  return [
+		'Food', 
+		'Transportation', 
+		'Housing', 
+		'Utilities', 
+		'Entertainment'
+	  ]; // Fallback categories
+	}
+  };
+// In utils/api.js
 export const addExpense = async (expenseData) => {
-  const response = await fetch(`${API_BASE_URL}/expenses`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(expenseData)
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to add expense');
-  }
-  return await response.json();
-};
+	try {
+	  // Ensure date is a valid ISO string
+	  const formattedExpense = {
+		...expenseData,
+		date: new Date(expenseData.date).toISOString(),
+		amount: parseFloat(expenseData.amount)
+	  };
+  
+	  const response = await fetch('/api/expenses', {
+		method: 'POST',
+		headers: { 
+		  'Content-Type': 'application/json' 
+		},
+		body: JSON.stringify(formattedExpense)
+	  });
+  
+	  if (!response.ok) {
+		const errorData = await response.json();
+		throw new Error(errorData.message || 'Failed to add expense');
+	  }
+  
+	  return await response.json();
+	} catch (error) {
+	  console.error('Error in addExpense:', error);
+	  throw error;
+	}
+  };
 
 // Budget-related API calls
 export const fetchBudgets = async () => {

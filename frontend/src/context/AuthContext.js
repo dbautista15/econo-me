@@ -33,12 +33,15 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     try {
+      console.log('Attempting login with:', { email, password: '[REDACTED]' });
       const response = await api.post('/auth/login', { email, password });
+      console.log('Login response:', response.data);
       localStorage.setItem('token', response.data.token);
       setToken(response.data.token);
       setCurrentUser(response.data.user);
       return { success: true };
     } catch (error) {
+      console.error('Login error details:', error.response?.data || error);
       return { 
         success: false, 
         message: error.response?.data?.message || 'Login failed' 

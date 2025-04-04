@@ -37,6 +37,9 @@ export const renderPieChart = (data, colors) => {
 
 // Bar chart for category breakdown
 export const renderBarChart = (data, colors) => {
+	if (!data || !Array.isArray(data) || data.length === 0) {
+        return <p>No spending data to display</p>;
+    }
   return (
     <ResponsiveContainer width="100%" height={300}>
       <BarChart data={data}>
@@ -54,6 +57,9 @@ export const renderBarChart = (data, colors) => {
     </ResponsiveContainer>
   );
 };
+
+
+
 
 // Line chart for monthly trends
 export const renderLineChart = (data) => {

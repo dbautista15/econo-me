@@ -3,22 +3,22 @@ import { calculateSavings, calculateBudgetStatus } from '../utils/helpers';
 import { fetchBudgets, updateBudget, createBudget } from '../utils/api';
 
 const IncomeGoals = ({
-	income,
-	setIncome,
-	spendingLimit,
-	setSpendingLimit,
-	savingsGoal,
-	setSavingsGoal,
-	expensesByCategory,
-	categoryBudgets,
-	setCategoryBudgets,
-	categories,
-	onSuccessMessage,
-	onErrorMessage
-}) => {
+    income = 0,
+    setIncome,
+    spendingLimit = 0,
+    setSpendingLimit,
+    savingsGoal = 0,
+    setSavingsGoal,
+    expensesByCategory = {},
+    categoryBudgets = {},
+    setCategoryBudgets,
+    categories = [],
+    onSuccessMessage = () => {},
+    onErrorMessage = () => {}
+})=> {
 	const [loading, setLoading] = useState(false);
 
-	const totalExpenses = Object.values(expensesByCategory).reduce((sum, value) => sum + value, 0);
+	const totalExpenses = Object.values(expensesByCategory || {}).reduce((sum, value) => sum + (value || 0), 0);
 	const savings = calculateSavings(income, totalExpenses);
 	const { isOverBudget } = calculateBudgetStatus(totalExpenses, spendingLimit);
 

@@ -25,6 +25,7 @@ router.get('/db-check', async (req, res) => {
 	  });
 	}
   });
+router.get('/categories', economeController.getCategories);
 // Expense routes
 router.post('/expenses', economeController.addExpense);
 router.get('/expenses', economeController.getExpenses);

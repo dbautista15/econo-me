@@ -1,0 +1,30 @@
+{
+  "name": "econo-me",
+  "version": "1.0.0",
+  "description": "A personal finance tracking application",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "start:backend": "cd backend && npm run dev",
+    "start:frontend": "cd frontend && npm start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dbautista15/econo-me.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/dbautista15/econo-me/issues"
+  },
+  "homepage": "https://github.com/dbautista15/econo-me#readme",
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

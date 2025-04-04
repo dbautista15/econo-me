@@ -48,6 +48,10 @@ export const validateExpenseForm = (amount, expenseDate) => {
   };
   
   export const preparePieChartData = (expensesByCategory) => {
+	if (!expensesByCategory || typeof expensesByCategory !== 'object') {
+	  return [];
+	}
+	
 	return Object.keys(expensesByCategory).map((key) => ({
 	  name: key,
 	  value: expensesByCategory[key]
@@ -85,4 +89,3 @@ export const validateExpenseForm = (amount, expenseDate) => {
 	  return monthData;
 	});
   };
-  
