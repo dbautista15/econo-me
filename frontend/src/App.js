@@ -4,6 +4,15 @@ import Dashboard from './components/Dashboard';
 import ExpenseTracker from './components/ExpenseTracker';
 import IncomeGoals from './components/IncomeGoals';
 import { fetchExpenses, fetchBudgets } from './utils/api';
+import { 
+  BrowserRouter, 
+  Routes, 
+  Route, 
+  Navigate 
+} from 'react-router-dom';
+import Login from './components/Login';
+import Register from './components/Registration';
+
 
 const App = () => {
   // Constants

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export const Header = () => (
   <header className="bg-blue-600 text-white shadow-lg">

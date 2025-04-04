@@ -13,7 +13,7 @@ class Econome {
 		const expense ={};
 		expense[category]=amount;
 		this.expenses.push(expense);
-		this.categoriseExpenses();
+		this.categorizeExpenses();
 	}
 
 	categorizeExpenses(){

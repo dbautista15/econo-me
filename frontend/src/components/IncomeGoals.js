@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { calculateSavings, calculateBudgetStatus } from '../utils/helpers';
 import { fetchBudgets, updateBudget, createBudget } from '../utils/api';
+import { useNavigate } from 'react-router-dom';
 
 const IncomeGoals = ({
 	income,
