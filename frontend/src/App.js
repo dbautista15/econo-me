@@ -15,9 +15,7 @@ const App = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
-    const location = useLocation(); // Add this line
-
-    // Add this effect to automatically update activeTab based on URL
+    const location = useLocation();    // Add this effect to automatically update activeTab based on URL
     useEffect(() => {
         console.log('Current location:', location.pathname);
         const path = location.pathname;
@@ -42,6 +40,8 @@ const App = () => {
             setTimeout(() => setErrorMessage(''), 3000);
         }
     };
+
+
 
     return (
         <AuthProvider>
@@ -88,6 +88,16 @@ const App = () => {
                             element={
                                 <ProtectedRoute>
                                     <IncomeGoals
+                                        income={0}
+                                        setIncome={() => {}} // Provide a dummy function
+                                        spendingLimit={0}
+                                        setSpendingLimit={() => {}} // Provide a dummy function
+                                        savingsGoal={0}
+                                        setSavingsGoal={() => {}} // Provide a dummy function
+                                        expensesByCategory={{}}
+                                        categories={['Food', 'Transportation', 'Housing', 'Utilities', 'Entertainment']}
+                                        categoryBudgets={{}}
+                                        setCategoryBudgets={() => {}} // Provide a dummy function
                                         onSuccessMessage={(msg) => showMessage(msg, 'success')}
                                         onErrorMessage={(msg) => showMessage(msg, 'error')}
                                         setActiveTab={() => setActiveTab('goals')}

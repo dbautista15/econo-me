@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { renderBarChart } from './Charts';
 import { validateExpenseForm, preparePieChartData } from '../utils/helpers';
-import { fetchCategories, fetchExpenses, addExpense } from '../utils/api';
+import api from '../utils/api';
 
 const ExpenseTracker = ({
 	categories = [],
@@ -29,12 +29,12 @@ const ExpenseTracker = ({
 		const loadData = async () => {
 			try {
 				const [fetchedCategories, fetchedExpenses] = await Promise.all([
-					fetchCategories(),
-					fetchExpenses()
+					api.get('/categories'),
+					api.get('/expenses')
 				]);
-				setCategoryList(fetchedCategories);
-				setExpenses(fetchedExpenses);
-				setFilteredExpenses(fetchedExpenses);
+				setCategoryList(fetchedCategories.data);
+				setExpenses(fetchedExpenses.data);
+				setFilteredExpenses(fetchedExpenses.data);
 			} catch (error) {
 				console.error('Failed to load data', error);
 				setErrorMessage('Failed to load expenses');
@@ -103,8 +103,9 @@ const ExpenseTracker = ({
 				date: new Date(expenseDate).toISOString()
 			};
 
-			// Add expense to backend
-			const addedExpense = await addExpense(newExpense);
+			// Add expense to backend - CHANGED THIS LINE
+			const response = await api.post('/expenses', newExpense);
+			const addedExpense = response.data.expense; // Make sure this matches your API response structure
 
 			// Update local state
 			const updatedExpenses = [...expenses, addedExpense];
@@ -287,11 +288,12 @@ const ExpenseTracker = ({
 								<tbody>
 									{filteredExpenses.map((expense, index) => (
 										<tr key={index}>
-											<td>{new Date(expense.date).toLocaleDateString()}</td>
+											<td>{expense.expense_date ? new Date(expense.expense_date).toLocaleDateString() : 'No date'}</td>
 											<td>{expense.category}</td>
 											<td>${parseFloat(expense.amount).toFixed(2)}</td>
 										</tr>
 									))}
+
 								</tbody>
 								<tfoot>
 									<tr className="border-t font-semibold">

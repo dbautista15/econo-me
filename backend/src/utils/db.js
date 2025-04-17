@@ -1,11 +1,19 @@
 const { Pool } = require('pg');
 const { Sequelize } = require('sequelize');
-require('dotenv').config(); // Only once
+require('dotenv').config();
 
+// Create PostgreSQL connection pool for raw SQL queries
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/econo-me'
 });
 
+// Handle unexpected errors on the pool
+pool.on('error', (err) => {
+    console.error('Unexpected error on PostgreSQL connection:', err);
+    process.exit(-1);
+});
+
+// Create Sequelize ORM connection (used for model-based operations)
 const sequelize = new Sequelize(
   process.env.DB_NAME, 
   process.env.DB_USER, 
@@ -24,13 +32,7 @@ const sequelize = new Sequelize(
   }
 );
 
-// Modify the connection to handle errors
-pool.on('error', (err) => {
-    console.error('Unexpected error on idle client', err);
-    process.exit(-1);
-});
-
-// Test connection function
+// Test both connection methods
 const testConnection = async () => {
     try {
         // Test PostgreSQL connection
@@ -41,6 +43,8 @@ const testConnection = async () => {
         // Test Sequelize connection
         await sequelize.authenticate();
         console.log('Sequelize connection successful');
+        
+        return true;
     } catch (err) {
         console.error('Database connection error:', err);
         throw err;

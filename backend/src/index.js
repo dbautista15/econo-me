@@ -13,6 +13,8 @@ testConnection().catch(err => {
 // Require models to ensure tables are created
 require('./models/expense');
 require('./models/budget');
+require('./models/income');
+require('./models/savingsGoal');
 
 // Sync models (optional)
 sequelize.sync({ alter: true }) // Be careful with this in production

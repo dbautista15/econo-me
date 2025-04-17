@@ -25,6 +25,13 @@ router.get('/db-check', async (req, res) => {
 	  });
 	}
   });
+// Income routes
+router.get('/incomes', economeController.getIncomes);
+router.post('/incomes', economeController.addIncome);
+// Savings goal routes
+router.get('/savings-goals', economeController.getSavingsGoals);
+router.post('/savings-goals', economeController.addSavingsGoal);
+
 router.get('/categories', economeController.getCategories);
 // Expense routes
 router.post('/expenses', economeController.addExpense);
@@ -37,5 +44,10 @@ router.post('/budgets', economeController.createBudget);
 router.get('/budgets', economeController.getBudgets);
 router.put('/budgets/:id', economeController.updateBudget);
 router.delete('/budgets/:id', economeController.deleteBudget);
+
+router.delete('/expenses/:id', economeController.deleteExpense);
+router.post('/expenses/bulk-delete', economeController.bulkDeleteExpenses);
+
+
 
 module.exports = router;

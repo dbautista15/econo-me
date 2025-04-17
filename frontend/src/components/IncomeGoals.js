@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { calculateSavings, calculateBudgetStatus } from '../utils/helpers';
-import { fetchBudgets, updateBudget, createBudget } from '../utils/api';
+import api from '../utils/api'; 
 
 const IncomeGoals = ({
     income = 0,
@@ -22,72 +22,130 @@ const IncomeGoals = ({
 	const savings = calculateSavings(income, totalExpenses);
 	const { isOverBudget } = calculateBudgetStatus(totalExpenses, spendingLimit);
 
-	const handleUpdateIncome = (e) => {
+	const handleUpdateIncome = async (e) => {
 		e.preventDefault();
 		const newIncome = parseFloat(e.target.income.value);
-		setIncome(newIncome);
-		onSuccessMessage('Income updated successfully!');
-	};
-
-	const handleUpdateSpendingLimit = async (e) => {
-		e.preventDefault();
-		const newLimit = parseFloat(e.target.limit.value);
 		setLoading(true);
-
+		
 		try {
-			// First, check if a budget for "Total" exists
-			const budgets = await fetchBudgets();
-			const totalBudget = budgets.find(b => b.category === 'Total');
-
-			if (totalBudget) {
-				await updateBudget(totalBudget.id, newLimit);
-			} else {
-				await createBudget('Total', newLimit);
-			}
-
-			setSpendingLimit(newLimit);
-			onSuccessMessage('Spending limit updated successfully!');
+		  // First check if any income record exists
+		  const incomesResponse = await api.get('/incomes');
+		  const incomes = incomesResponse.data;
+		  const latestIncome = incomes.length > 0 ? incomes[0] : null;
+		  
+		  if (latestIncome) {
+			// Update existing income
+			await api.put(`/incomes/${latestIncome.id}`, { amount: newIncome });
+		  } else {
+			// Create new income record
+			await api.post('/incomes', { 
+			  source: 'Monthly Income', 
+			  amount: newIncome,
+			  date: new Date().toISOString()
+			});
+		  }
+		  
+		  setIncome(newIncome);
+		  onSuccessMessage('Income updated successfully!');
 		} catch (error) {
-			onErrorMessage(`Error updating spending limit: ${error.message}`);
+		  onErrorMessage(`Error updating income: ${error.message}`);
+		  console.error('Error updating income:', error);
 		} finally {
-			setLoading(false);
+		  setLoading(false);
 		}
-	};
-
-	const handleUpdateSavingsGoal = (e) => {
+	  };
+	  
+	  const handleUpdateSavingsGoal = async (e) => {
 		e.preventDefault();
 		const newGoal = parseFloat(e.target.goal.value);
-		setSavingsGoal(newGoal);
-		onSuccessMessage('Savings goal updated successfully!');
-	};
+		setLoading(true);
+		
+		try {
+		  // First check if any savings goal exists
+		  const savingsResponse = await api.get('/savings-goals');
+		  const savingsGoals = savingsResponse.data;
+		  const latestGoal = savingsGoals.length > 0 ? savingsGoals[0] : null;
+		  
+		  if (latestGoal) {
+			// Update existing goal
+			await api.put(`/savings-goals/${latestGoal.id}`, { target_amount: newGoal });
+		  } else {
+			// Create new savings goal
+			await api.post('/savings-goals', {
+			  name: 'Monthly Savings',
+			  target_amount: newGoal,
+			  current_amount: calculateSavings(income, totalExpenses),
+			  target_date: null // Monthly goal doesn't need target date
+			});
+		  }
+		  
+		  setSavingsGoal(newGoal);
+		  onSuccessMessage('Savings goal updated successfully!');
+		} catch (error) {
+		  onErrorMessage(`Error updating savings goal: ${error.message}`);
+		  console.error('Error updating savings goal:', error);
+		} finally {
+		  setLoading(false);
+		}
+	  };
+
+const handleUpdateSpendingLimit = async (e) => {
+    e.preventDefault();
+    const newLimit = parseFloat(e.target.limit.value);
+    setLoading(true);
+
+    try {
+        // First, check if a budget for "Total" exists
+        const budgetsResponse = await api.get('/budgets');
+        const budgets = budgetsResponse.data;
+        const totalBudget = budgets.find(b => b.category === 'Total');
+
+        if (totalBudget) {
+            // Update existing budget
+            await api.put(`/budgets/${totalBudget.id}`, { limit: newLimit });
+        } else {
+            // Create new budget
+            await api.post('/budgets', { category: 'Total', limit: newLimit });
+        }
+
+        setSpendingLimit(newLimit);
+        onSuccessMessage('Spending limit updated successfully!');
+    } catch (error) {
+        onErrorMessage(`Error updating spending limit: ${error.message}`);
+    } finally {
+        setLoading(false);
+    }
+};
+
 
 	const updateCategoryBudget = async (category, amount) => {
 		try {
-		  // Check if budget exists for this category
-		  const budgets = await fetchBudgets();
-		  const existingBudget = budgets.find(b => b.category === category);
-		  
-		  if (existingBudget) {
-			// Update existing budget
-			await updateBudget(existingBudget.id, amount);
-		  } else {
-			// Create new budget
-			await createBudget(category, amount);
-		  }
-		  
-		  // Update local state
-		  setCategoryBudgets(prev => ({
-			...prev,
-			[category]: parseFloat(amount)
-		  }));
-		  
-		  onSuccessMessage(`${category} budget updated successfully!`);
-		  return true;
+			// Check if budget exists for this category
+			const budgetsResponse = await api.get('/budgets');
+			const budgets = budgetsResponse.data;
+			const existingBudget = budgets.find(b => b.category === category);
+			
+			if (existingBudget) {
+				// Update existing budget
+				await api.put(`/budgets/${existingBudget.id}`, { limit: amount });
+			} else {
+				// Create new budget
+				await api.post('/budgets', { category, limit: amount });
+			}
+			
+			// Update local state
+			setCategoryBudgets(prev => ({
+				...prev,
+				[category]: parseFloat(amount)
+			}));
+			
+			onSuccessMessage(`${category} budget updated successfully!`);
+			return true;
 		} catch (error) {
-		  onErrorMessage(`Error updating budget: ${error.message}`);
-		  return false;
+			onErrorMessage(`Error updating budget: ${error.message}`);
+			return false;
 		}
-	  };
+	};
 	return (
 		<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 			{/* Update Income */}

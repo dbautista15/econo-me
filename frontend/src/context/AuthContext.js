@@ -17,19 +17,25 @@ export function AuthProvider({ children }) {
     const loadUser = async () => {
       if (token) {
         try {
+          // Set the auth header for all future requests
+          api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+          
           const response = await api.get('/auth/profile');
           setCurrentUser(response.data.user);
         } catch (error) {
+          console.error('Error loading user', error);
           // Token might be expired or invalid
           localStorage.removeItem('token');
+          delete api.defaults.headers.common['Authorization'];
           setToken(null);
         }
       }
       setLoading(false);
     };
-
+  
     loadUser();
   }, [token]);
+  
 
   const login = async (email, password) => {
     try {

@@ -1,109 +1,40 @@
-import axios from 'axios';
+// Benefits of This Pattern
 
+// Centralized Configuration: All API-related settings are in one place
+// Authentication Handling: Token management is automatic and consistent
+// Code Reusability: Prevents duplicating configuration across files
+// Maintainability: Changes to API URL or auth mechanism only need to be made once
+
+// Debugging Considerations
+// When debugging API-related issues:
+
+// Check that the API_BASE_URL matches your backend server
+// Verify token storage and retrieval in localStorage
+// Use browser network tools to confirm headers are being set correctly
+// Consider adding response interceptors for global error handling
+import axios from 'axios';
+//sets the base URL for all API requests 
 const API_BASE_URL = 'http://localhost:5003/api';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5003/api',
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json'
   }
 });
 
-// Add a request interceptor to include token if exists
+// this right here is a powerful feature inside axios that lets you modify requests before theyre sent:
+// it checks if theres an authentication token stored in the browsers localstorage  and if a token exists it adds it to the authorization header using the bearer scheme, this automatically handles authentication for all the requests without having to manually add the token each time
 api.interceptors.request.use((config) => {
+   // Gets the authentication token from local storage (if it exists)
   const token = localStorage.getItem('token');
+    // If a token exists, add it to the Authorization header
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+    // Returns the modified config
   return config;
 });
-
+// this makes the configured axios instance avaialable to import in other files
 export default api;
 
-// Expense-related API calls
-export const fetchExpenses = async () => {
-  const response = await fetch(`${API_BASE_URL}/expenses`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch expenses');
-  }
-  return await response.json();
-};
-export const fetchCategories = async () => {
-	try {
-	  const response = await axios.get('/api/categories'); // Adjust endpoint as needed
-	  return response.data;
-	} catch (error) {
-	  console.error('Error fetching categories', error);
-	  return [
-		'Food', 
-		'Transportation', 
-		'Housing', 
-		'Utilities', 
-		'Entertainment'
-	  ]; // Fallback categories
-	}
-  };
-// In utils/api.js
-export const addExpense = async (expenseData) => {
-	try {
-	  // Ensure date is a valid ISO string
-	  const formattedExpense = {
-		...expenseData,
-		date: new Date(expenseData.date).toISOString(),
-		amount: parseFloat(expenseData.amount)
-	  };
-  
-	  const response = await fetch('/api/expenses', {
-		method: 'POST',
-		headers: { 
-		  'Content-Type': 'application/json' 
-		},
-		body: JSON.stringify(formattedExpense)
-	  });
-  
-	  if (!response.ok) {
-		const errorData = await response.json();
-		throw new Error(errorData.message || 'Failed to add expense');
-	  }
-  
-	  return await response.json();
-	} catch (error) {
-	  console.error('Error in addExpense:', error);
-	  throw error;
-	}
-  };
-
-// Budget-related API calls
-export const fetchBudgets = async () => {
-  const response = await fetch(`${API_BASE_URL}/budgets`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch budgets');
-  }
-  return await response.json();
-};
-
-export const updateBudget = async (id, amount) => {
-  const response = await fetch(`${API_BASE_URL}/budgets/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ limit_amount: amount })
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to update budget');
-  }
-  return await response.json();
-};
-
-export const createBudget = async (category, amount) => {
-  const response = await fetch(`${API_BASE_URL}/budgets`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ category, limit_amount: amount })
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to create budget');
-  }
-  return await response.json();
-};
