@@ -26,5 +26,9 @@
   "homepage": "https://github.com/dbautista15/econo-me#readme",
   "devDependencies": {
     "concurrently": "^9.1.2"
-  }
+  },
+  "resolutions": {
+  "nth-check": "^2.0.1",
+  "postcss": "^8.4.31"
+}
 }
