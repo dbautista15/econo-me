@@ -89,7 +89,7 @@ const DataCleanup = ({ onSuccess, onError }) => {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-xl font-semibold mb-4">Cleanup Test Data</h2>
+      <h2 className="text-xl font-semibold mb-4">Cleanup Expenses</h2>
       
       {error && (
         <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-md">
