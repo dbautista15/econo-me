@@ -1,0 +1,61 @@
+@startuml Econo-me Database Schema
+skinparam backgroundColor white
+skinparam linetype ortho
+skinparam packageStyle rectangle
+
+title Econo-me Database Schema
+
+' Entity definitions
+entity "users" as users {
+  * id : SERIAL <<PK>>
+  --
+  * username : VARCHAR(255) <<UNIQUE>>
+  * email : VARCHAR(255) <<UNIQUE>>
+  * password : VARCHAR(255)
+  created_at : TIMESTAMP
+}
+
+entity "expenses" as expenses {
+  * id : SERIAL <<PK>>
+  --
+  * category : VARCHAR(255)
+  * amount : NUMERIC
+  * expense_date : TIMESTAMP
+  user_id : INTEGER <<FK>>
+}
+
+entity "budgets" as budgets {
+  * id : SERIAL <<PK>>
+  --
+  * category : VARCHAR(255) <<UNIQUE>>
+  * limit_amount : NUMERIC
+  user_id : INTEGER <<FK>>
+}
+
+entity "incomes" as incomes {
+  * id : SERIAL <<PK>>
+  --
+  * source : VARCHAR(255)
+  * amount : NUMERIC
+  * income_date : TIMESTAMP
+  user_id : INTEGER <<FK>>
+}
+
+entity "savings_goals" as savings_goals {
+  * id : SERIAL <<PK>>
+  --
+  * name : VARCHAR(255)
+  * target_amount : NUMERIC
+  current_amount : NUMERIC
+  target_date : DATE
+  created_at : TIMESTAMP
+  user_id : INTEGER <<FK>>
+}
+
+' Relationships
+users ||--o{ expenses : has
+users ||--o{ budgets : has
+users ||--o{ incomes : has
+users ||--o{ savings_goals : has
+
+@enduml

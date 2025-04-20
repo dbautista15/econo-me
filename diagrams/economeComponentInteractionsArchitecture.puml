@@ -1,0 +1,143 @@
+@startuml Econo-me Component Interactions
+skinparam backgroundColor white
+skinparam sequenceArrowThickness 2
+skinparam sequenceParticipant underline
+
+title Econo-me Component Interactions - Example Workflows
+
+' Add Expense Workflow
+actor User
+participant "ExpenseTracker\nComponent" as ExpenseComp
+participant "API Service" as APIService
+participant "Express Routes" as Routes
+participant "Expense\nController" as Controller
+participant "Econome\nService" as Service
+database "PostgreSQL" as DB
+
+== Add Expense Workflow ==
+
+User -> ExpenseComp : Enter expense details
+activate ExpenseComp
+ExpenseComp -> ExpenseComp : Validate form
+ExpenseComp -> APIService : POST /api/expenses
+activate APIService
+APIService -> Routes : HTTP Request
+activate Routes
+Routes -> Controller : addExpense()
+activate Controller
+Controller -> Service : addExpense()
+activate Service
+Service -> DB : INSERT INTO expenses
+activate DB
+DB --> Service : Return result
+deactivate DB
+Service --> Controller : Return status
+deactivate Service
+Controller --> Routes : Return response
+deactivate Controller
+Routes --> APIService : HTTP Response
+deactivate Routes
+APIService --> ExpenseComp : Response data
+deactivate APIService
+ExpenseComp -> ExpenseComp : Update UI
+ExpenseComp --> User : Show success message
+deactivate ExpenseComp
+
+== Dashboard Data Load Workflow ==
+
+User -> "Dashboard\nComponent" as DashboardComp : Open dashboard
+activate DashboardComp
+DashboardComp -> APIService : GET /api/expenses
+activate APIService
+APIService -> Routes : HTTP Request
+activate Routes
+Routes -> Controller : getExpenses()
+activate Controller
+Controller -> DB : SELECT FROM expenses
+activate DB
+DB --> Controller : Return expenses
+deactivate DB
+Controller --> Routes : Return expenses
+deactivate Controller
+Routes --> APIService : HTTP Response
+deactivate Routes
+APIService --> DashboardComp : Expenses data
+deactivate APIService
+
+DashboardComp -> APIService : GET /api/budgets
+activate APIService
+APIService -> Routes : HTTP Request
+activate Routes
+Routes -> Controller : getBudgets()
+activate Controller
+Controller -> DB : SELECT FROM budgets
+activate DB
+DB --> Controller : Return budgets
+deactivate DB
+Controller --> Routes : Return budgets
+deactivate Controller
+Routes --> APIService : HTTP Response
+deactivate Routes
+APIService --> DashboardComp : Budgets data
+deactivate APIService
+
+DashboardComp -> APIService : GET /api/incomes
+activate APIService
+APIService -> Routes : HTTP Request
+activate Routes
+Routes -> Controller : getIncomes()
+activate Controller
+Controller -> DB : SELECT FROM incomes
+activate DB
+DB --> Controller : Return incomes
+deactivate DB
+Controller --> Routes : Return incomes
+deactivate Controller
+Routes --> APIService : HTTP Response
+deactivate Routes
+APIService --> DashboardComp : Incomes data
+deactivate APIService
+
+DashboardComp -> DashboardComp : Process data
+DashboardComp -> "Charts\nComponent" as ChartsComp : Render charts
+activate ChartsComp
+ChartsComp --> DashboardComp : Charts rendered
+deactivate ChartsComp
+DashboardComp --> User : Display dashboard
+deactivate DashboardComp
+
+== Authentication Workflow ==
+
+User -> "Login\nComponent" as LoginComp : Enter credentials
+activate LoginComp
+LoginComp -> LoginComp : Validate form
+LoginComp -> APIService : POST /api/auth/login
+activate APIService
+APIService -> "Auth\nRoutes" as AuthRoutes : HTTP Request
+activate AuthRoutes
+AuthRoutes -> "Auth\nController" as AuthController : login()
+activate AuthController
+AuthController -> DB : Verify credentials
+activate DB
+DB --> AuthController : User found
+deactivate DB
+AuthController -> AuthController : Generate JWT
+AuthController --> AuthRoutes : Return token & user
+deactivate AuthController
+AuthRoutes --> APIService : HTTP Response
+deactivate AuthRoutes
+APIService --> LoginComp : Auth response
+deactivate APIService
+LoginComp -> "Auth\nContext" as AuthContext : Update context
+activate AuthContext
+AuthContext -> AuthContext : Store token
+AuthContext --> LoginComp : Context updated
+deactivate AuthContext
+LoginComp -> "Router" as Router : Navigate to dashboard
+activate Router
+Router --> LoginComp : Route changed
+deactivate Router
+LoginComp --> User : Redirect to dashboard
+deactivate LoginComp
+
+@enduml

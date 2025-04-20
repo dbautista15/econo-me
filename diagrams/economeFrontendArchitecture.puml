@@ -1,0 +1,82 @@
+@startuml Econo-me Frontend Architecture
+skinparam backgroundColor white
+skinparam componentStyle uml2
+skinparam packageStyle rectangle
+skinparam componentBackgroundColor #FEFECE
+skinparam packageBackgroundColor #EFEFEF
+
+title Econo-me Frontend Architecture
+
+package "Frontend (React)" {
+  component "App.js" as AppJS
+  component "Router" as Router
+  
+  package "UI Components" {
+    component "Dashboard" as DashboardComp
+    component "ExpenseTracker" as ExpenseTrackerComp
+    component "IncomeGoals" as IncomeGoalsComp
+    component "Layout Components" as LayoutComps {
+      component "Header" as Header
+      component "Navigation" as Navigation
+      component "Footer" as Footer
+      component "NotificationMessage" as Notify
+    }
+    component "Authentication UI" as AuthComps {
+      component "Login" as Login
+      component "Register" as Register
+      component "ProtectedRoute" as ProtectedRoute
+    }
+    component "Charts" as ChartsComp
+    component "DataCleanup" as CleanupComp
+  }
+  
+  package "Services & Utilities" {
+    component "AuthContext" as AuthCtx
+    component "API Service" as APIService
+    component "Storage Utils" as StorageUtils
+    component "Helper Functions" as HelperFuncs
+  }
+
+  ' External libraries
+  component [React Router] as ReactRouter
+  component [Axios] as Axios
+  component [Recharts] as Recharts
+}
+
+' Frontend component relationships
+AppJS --> Router : routes
+Router --> DashboardComp : renders
+Router --> ExpenseTrackerComp : renders
+Router --> IncomeGoalsComp : renders
+Router --> AuthComps : renders
+Router --> ReactRouter : uses
+
+ProtectedRoute --> Router : extends
+DashboardComp --> ChartsComp : uses
+ExpenseTrackerComp --> ChartsComp : uses
+DashboardComp --> CleanupComp : contains
+
+Login --> AuthCtx : consumes/updates
+Register --> AuthCtx : consumes/updates
+DashboardComp --> AuthCtx : consumes
+ExpenseTrackerComp --> AuthCtx : consumes
+IncomeGoalsComp --> AuthCtx : consumes
+
+AuthCtx --> APIService : calls
+DashboardComp --> APIService : calls
+ExpenseTrackerComp --> APIService : calls
+IncomeGoalsComp --> APIService : calls
+CleanupComp --> APIService : calls
+APIService --> Axios : uses
+
+DashboardComp --> StorageUtils : uses
+DashboardComp --> HelperFuncs : uses
+ExpenseTrackerComp --> HelperFuncs : uses
+IncomeGoalsComp --> HelperFuncs : uses
+ChartsComp --> Recharts : uses
+
+' Data flows
+AppJS -(0- AuthCtx : user state
+APIService -(0- AuthCtx : auth token
+
+@enduml

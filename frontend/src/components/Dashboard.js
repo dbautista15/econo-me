@@ -248,7 +248,7 @@ const Dashboard = ({ onSuccessMessage, onErrorMessage }) => {
         <h2 className="text-xl font-semibold mb-4">Financial Summary</h2>
         <div className="grid grid-cols-2 gap-4">
           <div className="p-4 bg-blue-50 rounded-md">
-            <h3 className="text-sm text-gray-500">Income</h3>
+            <h3 className="text-sm text-gray-500">Monthly/Weekly Income</h3>
             <div className="flex items-center">
               <p className="text-2xl font-bold text-gray-800">${income.toFixed(2)}</p>
               <button 
@@ -289,11 +289,11 @@ const Dashboard = ({ onSuccessMessage, onErrorMessage }) => {
             )}
           </div>
           <div className="p-4 bg-blue-50 rounded-md">
-            <h3 className="text-sm text-gray-500">Expenses</h3>
+            <h3 className="text-sm text-gray-500">Current Expenses</h3>
             <p className="text-2xl font-bold text-gray-800">${totalExpenses.toFixed(2)}</p>
           </div>
           <div className="p-4 bg-blue-50 rounded-md">
-            <h3 className="text-sm text-gray-500">Savings</h3>
+            <h3 className="text-sm text-gray-500"> Current Savings</h3>
             <p className="text-2xl font-bold text-gray-800">${savings.toFixed(2)}</p>
           </div>
           <div className="p-4 bg-blue-50 rounded-md">
@@ -418,7 +418,7 @@ const Dashboard = ({ onSuccessMessage, onErrorMessage }) => {
         <MonthlyBreakdown />
       </div>
       
-      {/* Category Budget Management - MOVED INSIDE the return statement */}
+      {/* Category Budget Management */}
       <div className="bg-white p-6 rounded-lg shadow-md md:col-span-2 mt-6">
         <h2 className="text-xl font-semibold mb-4">Category Budget Management</h2>
         <div className="overflow-x-auto">

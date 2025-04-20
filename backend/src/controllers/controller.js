@@ -1,7 +1,6 @@
 const { pool } = require('../utils/db');
 const Econome = require('../services/services');
-
-// Add these to your existing controller.js file
+const economeService = new Econome();
 
 // Income controllers
 exports.getIncomes = async (req, res) => {
