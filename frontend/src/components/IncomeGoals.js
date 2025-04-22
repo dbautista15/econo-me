@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { calculateSavings, calculateBudgetStatus } from '../utils/helpers';
+import { useCategories } from '../context/CategoryContext';
 import api from '../utils/api'; 
 
 const IncomeGoals = ({
@@ -12,12 +13,11 @@ const IncomeGoals = ({
     expensesByCategory = {},
     categoryBudgets = {},
     setCategoryBudgets,
-    categories = [],
     onSuccessMessage = () => {},
     onErrorMessage = () => {}
 })=> {
 	const [loading, setLoading] = useState(false);
-
+	const { categories } = useCategories();
 	const totalExpenses = Object.values(expensesByCategory || {}).reduce((sum, value) => sum + (value || 0), 0);
 	const savings = calculateSavings(income, totalExpenses);
 	const { isOverBudget } = calculateBudgetStatus(totalExpenses, spendingLimit);

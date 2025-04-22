@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { renderPieChart, renderLineChart, renderBarChart, renderStackedBarChart } from './Charts';
 import { calculateSavings, calculateBudgetStatus, preparePieChartData } from '../utils/helpers';
+import { useCategories } from '../context/CategoryContext'; // Add this import
 import { Header, Navigation, Footer } from './Layout';
 import LoadingSpinner from './LoadingSpinner';
 import api from '../utils/api';
@@ -11,7 +12,10 @@ const Dashboard = () => {
   const [savingsGoal, setSavingsGoal] = useState(0);
   const [spendingLimit, setSpendingLimit] = useState(0);
   const [expenses, setExpenses] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState([
+    'Food', 'Transportation', 'Housing', 'Utilities', 'Entertainment', 
+    'Healthcare', 'Dining Out', 'Shopping'
+]);
   const [expensesByCategory, setExpensesByCategory] = useState({});
   const [categoryBudgets, setCategoryBudgets] = useState({});
   const [loading, setLoading] = useState(true);
@@ -54,7 +58,7 @@ const Dashboard = () => {
         setExpensesByCategory(expByCat);
 
         // Set categories
-        setCategories(categoriesRes.data || ['Food', 'Transportation', 'Housing', 'Utilities', 'Entertainment']);
+        setCategories(['Food', 'Transportation', 'Housing', 'Utilities', 'Entertainment']);
 
         // Set income
         if (incomesRes.data && incomesRes.data.length > 0) {
@@ -191,9 +195,6 @@ const Dashboard = () => {
               <h3 className="text-sm text-gray-500">Monthly Income</h3>
               <div className="flex items-center">
                 <p className="text-2xl font-bold">${income.toFixed(2)}</p>
-                <button className="ml-2 text-blue-600 hover:text-blue-800 text-sm">
-                  Edit
-                </button>
               </div>
             </div>
             
@@ -201,9 +202,6 @@ const Dashboard = () => {
               <h3 className="text-sm text-gray-500">Current Expenses</h3>
               <div className="flex items-center">
                 <p className="text-2xl font-bold">${totalExpenses.toFixed(2)}</p>
-                <button className="ml-2 text-blue-600 hover:text-blue-800 text-sm">
-                  Add
-                </button>
               </div>
             </div>
             
@@ -223,9 +221,6 @@ const Dashboard = () => {
           <div>
             <div className="flex items-center mb-2">
               <h3 className="text-sm text-gray-500">Savings Goal Progress</h3>
-              <button className="ml-2 text-blue-600 hover:text-blue-800 text-sm">
-                Edit
-              </button>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-4">
               <div

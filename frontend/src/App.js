@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { CategoryProvider } from './context/CategoryContext';
 import Login from './components/Login';
 import Register from './components/Registration';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -45,6 +46,7 @@ const App = () => {
 
     return (
         <AuthProvider>
+            <CategoryProvider> {/* Add this provider */}
             <div className="flex flex-col min-h-screen">
                 <Header />
                 <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -95,7 +97,7 @@ const App = () => {
                                         savingsGoal={0}
                                         setSavingsGoal={() => {}} // Provide a dummy function
                                         expensesByCategory={{}}
-                                        categories={['Food', 'Transportation', 'Housing', 'Utilities', 'Entertainment']}
+                                        // categoryBudgets={{}}
                                         categoryBudgets={{}}
                                         setCategoryBudgets={() => {}} // Provide a dummy function
                                         onSuccessMessage={(msg) => showMessage(msg, 'success')}
@@ -110,6 +112,7 @@ const App = () => {
 
                 <Footer />
             </div>
+            </CategoryProvider> 
         </AuthProvider>
     );
 };

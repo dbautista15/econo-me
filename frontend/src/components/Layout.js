@@ -68,18 +68,6 @@ export const Navigation = ({ activeTab, setActiveTab }) => {
 			>
 			  Dashboard
 			</button>
-			<button
-			  className={`px-4 py-4 font-medium ${activeTab === 'expenses' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
-			  onClick={() => handleTabClick('expenses', '/expenses')}
-			>
-			  Track Expenses
-			</button>
-			<button
-			  className={`px-4 py-4 font-medium ${activeTab === 'goals' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
-			  onClick={() => handleTabClick('goals', '/goals')}
-			>
-			  Income & Goals
-			</button>
 		  </nav>
 		</div>
 	  </div>

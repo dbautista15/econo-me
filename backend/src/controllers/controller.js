@@ -55,30 +55,28 @@ exports.getIncomes = async (req, res) => {
       res.status(500).json({ error: error.message });
     }
   };
-exports.getCategories = async (req, res) => {
+  exports.getCategories = async (req, res) => {
     try {
-        // Option 1: Fetch from database
         const result = await pool.query('SELECT DISTINCT category FROM expenses');
-        const categories = result.rows.map(row => row.category);
+        const distinctCategories = result.rows.map(row => row.category);
 
-        // Option 2: If you prefer a predefined list
         const defaultCategories = [
-            'Food',
-            'Transportation',
-            'Housing',
-            'Utilities',
-            'Entertainment',
-            'Healthcare',
-            'Dining Out',
-            'Shopping'
+            'Food', 'Transportation', 'Housing', 'Utilities', 'Entertainment', 
+            'Healthcare', 'Dining Out', 'Shopping'
         ];
 
-        res.status(200).json(categories.length > 0 ? categories : defaultCategories);
+        // Merge distinct categories with defaults, removing duplicates
+        const combinedCategories = [...new Set([...distinctCategories, ...defaultCategories])];
+
+        res.status(200).json(combinedCategories);
     } catch (error) {
         console.error('Error fetching categories:', error);
         res.status(500).json({
             message: 'Failed to fetch categories',
-            error: error.message
+            defaultCategories: [
+                'Food', 'Transportation', 'Housing', 'Utilities', 'Entertainment', 
+                'Healthcare', 'Dining Out', 'Shopping'
+            ]
         });
     }
 };
