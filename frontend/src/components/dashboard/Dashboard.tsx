@@ -17,24 +17,20 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  calculateSavings,
-  calculateBudgetStatus,
-  getSuggestedLimit
-} from '../../utils/helpers';
-import LoadingSpinner from '../ui/LoadingSpinner';
-import api from '../../utils/api';
-import Alert from '../ui/Alert';
+import {calculateSavings,calculateBudgetStatus,getSuggestedLimit} from '../../utils/helpers.tsx';
+import LoadingSpinner from '../ui/LoadingSpinner.tsx';
+import api from '../../utils/api.tsx';
+import Alert from '../ui/Alert.tsx/index.ts';
 // Import dashboard components
-import FinancialSummary from './FinancialSummary';
-import DataCleanup from '../admin/DataCleanup';
-import ExpenseDistribution from '../expensetracker/ExpenseDistribution';
-import AddExpenseForm from '../expensetracker/AddExpenseForm';
-import FilterExpenses from '../expensetracker/FilterExpenses';
-import CategoryBudgetManager from '../goals/CategoryBudgetManager';
-import FinancialInsights from '../dashboard/FinancialInsights';
-import IncomeGoals from '../goals/IncomeGoals';
-
+import FinancialSummary from './FinancialSummary.js';
+import DataCleanup from '../admin/DataCleanup.js';
+import ExpenseDistribution from '../expensetracker/ExpenseDistribution.tsx';
+import AddExpenseForm from '../expensetracker/AddExpenseForm.tsx';
+import FilterExpenses from '../expensetracker/FilterExpenses.tsx';
+import CategoryBudgetManager from '../goals/CategoryBudgetManager.tsx';
+import FinancialInsights from './FinancialInsights.js';
+import IncomeGoals from '../goals/IncomeGoals.tsx';
+import IncomeEntryForm from '../goals/IncomeEntryForm.tsx';
 const Dashboard = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');

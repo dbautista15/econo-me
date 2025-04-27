@@ -1,6 +1,6 @@
 import React from 'react';
-import { renderPieChart } from '../ui/Charts';
-import { preparePieChartData } from '../../utils/helpers';
+import { renderPieChart } from '../ui/Charts.tsx';
+import { preparePieChartData } from '../../utils/helpers.tsx';
 
 const ExpenseDistribution = ({ expensesByCategory, colors, totalExpenses }) => {
   return (

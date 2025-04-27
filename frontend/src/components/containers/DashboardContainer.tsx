@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import Dashboard from '../dashboard/Dashboard';
-import DataCleanup from '../admin/DataCleanup';
-import Alert from '../ui/Alert'; 
-import api from '../../utils/api';
+import Dashboard from '../dashboard/Dashboard.tsx';
+import DataCleanup from '../admin/DataCleanup.js';
+import Alert from '../ui/Alert.tsx'; 
+import api from '../../utils/api.tsx';
 
 /**
  * DashboardContainer

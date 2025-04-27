@@ -4,7 +4,7 @@
  * A collection of utility functions for financial calculations, data validation,
  * and data transformation to support dashboard visualizations and user interactions.
  */
-import api from '../utils/api';
+import api from './api';
 /**
  * Validates expense form inputs
  * @param {number|string} amount - The expense amount to validate

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { validateExpenseForm, preparePieChartData } from '../../utils/helpers';
-import { useCategories } from '../../context/CategoryContext';
-import api from '../../utils/api';
-import Alert from '../ui/Alert';
-import AddExpenseForm from '../expensetracker/AddExpenseForm';
-import ExpenseFilter from './ExpenseFilter';
-import RecentExpensesTable from './RecentExpensesTable';
-import CategoryBreakdownChart from '../goals/CategoryBudgetManager';
+import { validateExpenseForm, preparePieChartData } from '../../utils/helpers.tsx';
+import { useCategories } from '../../context/CategoryContext.tsx';
+import api from '../../utils/api.tsx';
+import Alert from '../ui/Alert.tsx/index.ts';
+import AddExpenseForm from './AddExpenseForm.tsx';
+import ExpenseFilter from './ExpenseFilter.tsx';
+import RecentExpensesTable from './RecentExpensesTable.js';
+import CategoryBreakdownChart from '../goals/CategoryBudgetManager.tsx';
 
 /**
  * ExpenseTracker Component

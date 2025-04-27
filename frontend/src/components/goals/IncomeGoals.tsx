@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { calculateSavings, calculateBudgetStatus, getSuggestedLimit } from '../../utils/helpers';
-import { useCategories } from '../../context/CategoryContext';
-import api from '../../utils/api';
-import { Section, Input, SubmitButton, Progress, Insight } from '../ui';
+import { calculateSavings, calculateBudgetStatus, getSuggestedLimit } from '../../utils/helpers.tsx';
+import { useCategories } from '../../context/CategoryContext.tsx';
+import api from '../../utils/api.tsx';
+import { Section, Input, SubmitButton, Progress, Insight } from '../ui/index.tsx';
 
 const IncomeGoals = ({
   income = 0,
