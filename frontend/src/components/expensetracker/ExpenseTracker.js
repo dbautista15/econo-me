@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { validateExpenseForm, preparePieChartData } from '../../utils/helpers';
 import { useCategories } from '../../context/CategoryContext';
 import api from '../../utils/api';
-import Alert from './Alert';
-import ExpenseForm from './ExpenseForm';
+import Alert from '../ui/Alert';
+import AddExpenseForm from '../expensetracker/AddExpenseForm';
 import ExpenseFilter from './ExpenseFilter';
 import RecentExpensesTable from './RecentExpensesTable';
-import CategoryBreakdownChart from './CategoryBreakdownChart';
+import CategoryBreakdownChart from '../goals/CategoryBudgetManager';
 
 /**
  * ExpenseTracker Component
@@ -17,7 +17,7 @@ const ExpenseTracker = ({
   expenses: initialExpenses = [],
   expensesByCategory = {},
   colors = [],
-  onExpensesChange = () => {}
+  onExpensesChange = () => { }
 }) => {
   const { categories, loading: categoriesLoading } = useCategories();
   const [expenses, setExpenses] = useState(initialExpenses);
@@ -102,7 +102,7 @@ const ExpenseTracker = ({
       {messages.error && <Alert type="error" message={messages.error} />}
 
       {/* Expense Form */}
-      <ExpenseForm
+      <AddExpenseForm
         category={category}
         amount={amount}
         expenseDate={expenseDate}

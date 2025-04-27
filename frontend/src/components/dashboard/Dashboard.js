@@ -22,17 +22,17 @@ import {
   calculateBudgetStatus,
   getSuggestedLimit
 } from '../../utils/helpers';
-import LoadingSpinner from '../layout/LoadingSpinner';
+import LoadingSpinner from '../ui/LoadingSpinner';
 import api from '../../utils/api';
-import Alert from '../expensetracker/Alert';
+import Alert from '../ui/Alert';
 // Import dashboard components
 import FinancialSummary from './FinancialSummary';
 import DataCleanup from '../admin/DataCleanup';
-import ExpenseDistribution from './ExpenseDistribution';
-import AddExpenseForm from './AddExpenseForm';
-import FilterExpenses from './FilterExpenses';
-import CategoryBudgetManager from './CategoryBudgetManager';
-import FinancialInsights from './FinancialInsights';
+import ExpenseDistribution from '../expensetracker/ExpenseDistribution';
+import AddExpenseForm from '../expensetracker/AddExpenseForm';
+import FilterExpenses from '../expensetracker/FilterExpenses';
+import CategoryBudgetManager from '../goals/CategoryBudgetManager';
+import FinancialInsights from '../dashboard/FinancialInsights';
 import IncomeGoals from '../goals/IncomeGoals';
 
 const Dashboard = () => {

@@ -26,7 +26,7 @@ package "Econo-me System" {
     ' Main UI Components
     package "UI Components" {
       component "Dashboard" as DashboardComp
-      component "ExpenseTracker" as ExpenseTrackerComp
+      component "AddExpenseForm" as ExpenseTrackerComp
       component "IncomeGoals" as IncomeGoalsComp
       component "Layout Components" as LayoutComps
       component "Login/Registration" as AuthComps

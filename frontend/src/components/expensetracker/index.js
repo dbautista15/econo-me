@@ -1,5 +1,5 @@
 export { default as ExpenseTracker } from './ExpenseTracker';
-export { default as ExpenseForm } from './ExpenseForm';
+export { default as AddExpenseForm } from '../expensetracker/AddExpenseForm';
 export { default as ExpenseFilter } from './ExpenseFilter';
 export { default as RecentExpensesTable } from './RecentExpensesTable';
 export { default as CategoryBreakdownChart } from './CategoryBreakdownChart';

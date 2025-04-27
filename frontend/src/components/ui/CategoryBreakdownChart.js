@@ -1,5 +1,5 @@
 import React from 'react';
-import { renderBarChart } from '../ui/Charts';
+import { renderBarChart } from './Charts';
 
 const CategoryBreakdownChart = ({ pieChartData, colors }) => (
   <div className="bg-white p-6 rounded-lg shadow-md md:col-span-3">

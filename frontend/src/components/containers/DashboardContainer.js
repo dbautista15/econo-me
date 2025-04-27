@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Dashboard from '../dashboard/Dashboard';
 import DataCleanup from '../admin/DataCleanup';
-import Alert from '../expensetracker/Alert'; 
+import Alert from '../ui/Alert'; 
 import api from '../../utils/api';
 
 /**
