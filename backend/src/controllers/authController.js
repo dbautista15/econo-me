@@ -1,8 +1,27 @@
+/**
+ * @fileoverview Authentication Controller Module
+ * 
+ * This module handles all authentication-related operations including user registration,
+ * login, profile management, and password changes. It also includes database setup
+ * for the users table.
+ * 
+ * @module controllers/authController
+ * @requires ../utils/db
+ * @requires bcrypt
+ * @requires jsonwebtoken
+ */
+
 const { pool } = require('../utils/db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-// Simple helper to create user table if it doesn't exist
+/**
+ * Creates the users table in the database if it doesn't exist
+ * 
+ * @function createUserTable
+ * @async
+ * @private
+ */
 const createUserTable = async () => {
   try {
     await pool.query(`
@@ -23,7 +42,19 @@ const createUserTable = async () => {
 // Initialize the users table
 createUserTable();
 
-// Register a new user
+/**
+ * Register a new user with validation and hashed password
+ * 
+ * @function register
+ * @async
+ * @param {Object} req - Express request object
+ * @param {Object} req.body - Request body
+ * @param {string} req.body.username - Desired username
+ * @param {string} req.body.email - User's email address
+ * @param {string} req.body.password - Plain text password (will be hashed)
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with user data, token, and message
+ */
 exports.register = async (req, res) => {
   const { username, email, password } = req.body;
 
@@ -72,7 +103,18 @@ exports.register = async (req, res) => {
   }
 };
 
-// Login user
+/**
+ * Authenticate an existing user and issue a JWT token
+ * 
+ * @function login
+ * @async
+ * @param {Object} req - Express request object
+ * @param {Object} req.body - Request body
+ * @param {string} req.body.email - User's email address
+ * @param {string} req.body.password - User's password
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with user data, token, and message
+ */
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -117,7 +159,18 @@ exports.login = async (req, res) => {
   }
 };
 
-// Get current user profile
+/**
+ * Fetch the current authenticated user's profile
+ * Requires authentication middleware to set req.user
+ * 
+ * @function getProfile
+ * @async
+ * @param {Object} req - Express request object
+ * @param {Object} req.user - User object set by authentication middleware
+ * @param {number} req.user.id - User ID from token
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with user profile data
+ */
 exports.getProfile = async (req, res) => {
   try {
     // The user ID should be available from the auth middleware
@@ -139,7 +192,21 @@ exports.getProfile = async (req, res) => {
   }
 };
 
-// Update user profile
+/**
+ * Update a user's profile information (username and/or email)
+ * Requires authentication middleware to set req.user
+ * 
+ * @function updateProfile
+ * @async
+ * @param {Object} req - Express request object
+ * @param {Object} req.user - User object set by authentication middleware
+ * @param {number} req.user.id - User ID from token
+ * @param {Object} req.body - Request body
+ * @param {string} [req.body.username] - New username (optional)
+ * @param {string} [req.body.email] - New email address (optional)
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with updated user data
+ */
 exports.updateProfile = async (req, res) => {
   const { username, email } = req.body;
 
@@ -196,7 +263,21 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
-// Change password
+/**
+ * Change a user's password with verification of current password
+ * Requires authentication middleware to set req.user
+ * 
+ * @function changePassword
+ * @async
+ * @param {Object} req - Express request object
+ * @param {Object} req.user - User object set by authentication middleware
+ * @param {number} req.user.id - User ID from token
+ * @param {Object} req.body - Request body
+ * @param {string} req.body.currentPassword - User's current password
+ * @param {string} req.body.newPassword - User's desired new password
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with success message
+ */
 exports.changePassword = async (req, res) => {
   const { currentPassword, newPassword } = req.body;
   

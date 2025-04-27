@@ -1,12 +1,13 @@
 import React from 'react';
-import {Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 export const Header = () => {
   const { currentUser, logout } = useAuth();
-  
+
   return (
     <header className="bg-blue-600 text-white shadow-lg">
+
       <div className="container mx-auto px-4 py-6">
         <div className="flex justify-between items-center">
           <div>
@@ -17,7 +18,7 @@ export const Header = () => {
             {currentUser ? (
               <div className="flex items-center space-x-4">
                 <span>Welcome, {currentUser.username}</span>
-                <button 
+                <button
                   onClick={logout}
                   className="bg-white text-blue-600 px-4 py-2 rounded-md hover:bg-blue-50 transition"
                 >
@@ -26,13 +27,13 @@ export const Header = () => {
               </div>
             ) : (
               <div className="space-x-2">
-                <Link 
+                <Link
                   to="/login"
                   className="bg-white text-blue-600 px-4 py-2 rounded-md hover:bg-blue-50 transition"
                 >
                   Login
                 </Link>
-                <Link 
+                <Link
                   to="/register"
                   className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-400 transition"
                 >
@@ -47,33 +48,33 @@ export const Header = () => {
   );
 };
 export const Navigation = ({ activeTab, setActiveTab }) => {
-	const { isAuthenticated } = useAuth();
-	const navigate = useNavigate();
-	
-	if (!isAuthenticated) return null;
-	
-	const handleTabClick = (tab, path) => {
-	  setActiveTab(tab);
-	  // Add a small delay to avoid state conflicts
-	  setTimeout(() => navigate(path), 50);
-	};
-	
-	return (
-	  <div className="bg-white shadow">
-		<div className="container mx-auto px-4">
-		  <nav className="flex">
-			<button
-			  className={`px-4 py-4 font-medium ${activeTab === 'dashboard' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
-			  onClick={() => handleTabClick('dashboard', '/dashboard')}
-			>
-			  Dashboard
-			</button>
-		  </nav>
-		</div>
-	  </div>
-	);
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  if (!isAuthenticated) return null;
+
+  const handleTabClick = (tab, path) => {
+    setActiveTab(tab);
+    // Add a small delay to avoid state conflicts
+    setTimeout(() => navigate(path), 50);
   };
-	export const NotificationMessage = ({ message, type }) => (
+
+  return (
+    <div className="bg-white shadow">
+      <div className="container mx-auto px-4">
+        <nav className="flex">
+          <button
+            className={`px-4 py-4 font-medium ${activeTab === 'dashboard' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
+            onClick={() => handleTabClick('dashboard', '/dashboard')}
+          >
+            Dashboard
+          </button>
+        </nav>
+      </div>
+    </div>
+  );
+};
+export const NotificationMessage = ({ message, type }) => (
   <div className={`mb-4 p-4 ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'} rounded-md`}>
     {message}
   </div>
