@@ -1,7 +1,9 @@
 import React from 'react';
 import { renderBarChart } from './Charts';
+import { CategoryBreakdownChartProps } from '../../../../types'
+import { transformations } from '../../utils/transformations';
 
-const CategoryBreakdownChart = ({ pieChartData, colors }) => (
+export const CategoryBreakdownChart: React.FC<CategoryBreakdownChartProps> = ({ pieChartData, colors }) => (
   <div className="bg-white p-6 rounded-lg shadow-md md:col-span-3">
     <h2 className="text-xl font-semibold mb-4">Spending by Category</h2>
     {Array.isArray(pieChartData) && pieChartData.length > 0
@@ -12,11 +14,12 @@ const CategoryBreakdownChart = ({ pieChartData, colors }) => (
       {pieChartData.map((category, index) => (
         <div key={index} className="p-4 bg-blue-50 rounded-md">
           <h3 className="text-sm text-gray-500">{category.name}</h3>
-          <p className="text-xl font-bold text-gray-800">${(+category.value).toFixed(2)}</p>
+          <p className="text-xl font-bold text-gray-800">
+            ${transformations.formatCurrency(category.value)}
+          </p>
         </div>
       ))}
     </div>
   </div>
 );
-
-export default CategoryBreakdownChart;
+export default CategoryBreakdownChart

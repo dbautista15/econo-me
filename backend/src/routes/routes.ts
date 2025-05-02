@@ -41,8 +41,7 @@ router.delete('/incomes/:id', authMiddleware, wrapAuthenticatedHandler(controlle
 router.get('/savings-goals', authMiddleware, wrapAuthenticatedHandler(controllers.getSavingsGoals));
 router.post('/savings-goals', authMiddleware, wrapAuthenticatedHandler(controllers.addSavingsGoal));
 
-// Category routes
-router.get('/categories', wrapAuthenticatedHandler(controllers.getCategories));
+router.get('/categories',controllers.getCategories);
 
 // Expense routes
 router.post('/expenses', authMiddleware, wrapAuthenticatedHandler(controllers.addExpense));

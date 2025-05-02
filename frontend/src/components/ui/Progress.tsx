@@ -1,10 +1,20 @@
 import React from 'react';
+import { transformations } from '../../utils/transformations';
 
-const Progress = ({ label, percent, color }) => (
+interface ProgressProps {
+  label: string;
+  percent: number;
+  color: string;
+}
+
+/**
+ * Progress bar component
+ */
+export const Progress: React.FC<ProgressProps> = ({ label, percent, color }) => (
   <div>
     <div className="flex justify-between text-sm">
       <span>{label}</span>
-      <span>{percent.toFixed(0)}%</span>
+      <span>{transformations.formatPercentage(percent)}%</span>
     </div>
     <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
       <div
@@ -14,5 +24,3 @@ const Progress = ({ label, percent, color }) => (
     </div>
   </div>
 );
-
-export default Progress;

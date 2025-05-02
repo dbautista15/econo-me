@@ -1,40 +1,56 @@
-// src/context/CategoryContext.js
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import api from '../utils/api';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useApi } from '../hooks/useApi';
+import { useContextState } from '../hooks/useContextState';
+import { CategoryContextType } from '../../../types'
 
-const CategoryContext = createContext();
+// Default categories to use as fallback
+const DEFAULT_CATEGORIES = [
+  'Food', 'Transportation', 'Housing', 'Utilities', 
+  'Entertainment', 'Healthcare', 'Dining Out', 'Shopping'
+];
 
-export function useCategories() {
-  return useContext(CategoryContext);
+// Create the context with an initial undefined value
+const CategoryContext = createContext<CategoryContextType | undefined>(undefined);
+
+// Props type for the provider component
+interface CategoryProviderProps {
+  children: ReactNode;
 }
 
-export function CategoryProvider({ children }) {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+export function useCategories(): CategoryContextType {
+  const context = useContext(CategoryContext);
+  if (context === undefined) {
+    throw new Error('useCategories must be used within a CategoryProvider');
+  }
+  return context;
+}
 
+export function CategoryProvider({ children }: CategoryProviderProps) {
+  const [categories, setCategories] = useState<string[]>([]);
+  const { loading, error, setError, executeOperation } = useContextState();
+  const api = useApi();
+
+  // Load categories from API
   useEffect(() => {
-    // Load categories from API
-    const fetchCategories = async () => {
-      try {
-        setLoading(true);
-        const response = await api.get('/categories');
-        
-        // If we get valid categories, use them
-        if (response.data && Array.isArray(response.data) && response.data.length > 0) {
-          setCategories(response.data);
-        } else {
-          // Fallback to default categories
-          setCategories(['Food', 'Transportation', 'Housing', 'Utilities', 'Entertainment', 'Healthcare', 'Dining Out', 'Shopping']);
-        }
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching categories:', err);
-        setError('Failed to load categories');
-        // Set fallback categories on error
-        setCategories(['Food', 'Transportation', 'Housing', 'Utilities', 'Entertainment']);
-      } finally {
-        setLoading(false);
+    const fetchCategories = async (): Promise<void> => {
+      const [data, success] = await executeOperation<string[]>(
+        async () => {
+          const response = await api.get('/categories');
+          // If we get valid categories, use them, otherwise use defaults
+          if (response && Array.isArray(response) && response.length > 0) {
+            return response;
+          }
+          return DEFAULT_CATEGORIES;
+        },
+        'Categories loaded successfully',
+        'Failed to load categories'
+      );
+      
+      if (success && data) {
+        setCategories(data);
+      } else {
+        // Fallback to default categories on failure
+        setCategories(DEFAULT_CATEGORIES);
       }
     };
 
@@ -42,26 +58,35 @@ export function CategoryProvider({ children }) {
   }, []);
 
   // Function to add a new category
-  const addCategory = async (newCategory) => {
+  const addCategory = async (newCategory: string): Promise<boolean> => {
     // Validate the category
     if (!newCategory || categories.includes(newCategory)) {
+      setError('Category is empty or already exists');
       return false;
     }
 
-    try {
-      // Here you would typically call an API to add the category
-      // await api.post('/categories', { name: newCategory });
-      
+    const [_, success] = await executeOperation(
+      async () => {
+        // Here you would typically call an API to add the category
+        // await api.post('/categories', { name: newCategory });
+        
+        // For now, just return the category
+        return newCategory;
+      },
+      'Category added successfully',
+      'Failed to add category'
+    );
+    
+    if (success) {
       // Update local state
       setCategories([...categories, newCategory]);
       return true;
-    } catch (error) {
-      setError('Failed to add category');
-      return false;
     }
+    
+    return false;
   };
 
-  const value = {
+  const value: CategoryContextType = {
     categories,
     loading,
     error,

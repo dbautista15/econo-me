@@ -1,46 +1,63 @@
 import React, { useState, useEffect } from 'react';
-import { validateExpenseForm, preparePieChartData } from '../../utils/helpers.tsx';
-import { useCategories } from '../../context/CategoryContext.tsx';
-import api from '../../utils/api.tsx';
-import Alert from '../ui/Alert.tsx/index.ts';
-import AddExpenseForm from './AddExpenseForm.tsx';
-import ExpenseFilter from './ExpenseFilter.tsx';
-import RecentExpensesTable from './RecentExpensesTable.js';
-import CategoryBreakdownChart from '../goals/CategoryBudgetManager.tsx';
+import ExpenseFilter from './ExpenseFilter';
+
+import { preparePieChartData } from '../ui/Charts';
+import { useCategories } from '../../context/CategoryContext';
+import api from '../../utils/api';
+import { ApiSuccess, ApiError } from '../../../../types';
+import {Alert} from '../ui/Alert';
+import AddExpenseForm from './AddExpenseForm';
+import RecentExpensesTable from './RecentExpensesTable';
+import {CategoryBreakdownChart} from '../ui/CategoryBreakdownChart';
+import { 
+  Expense, 
+  ExpenseTrackerProps, 
+  MessageState, 
+  FormErrors, 
+  ExpenseForm,
+  ExpenseFilter as ExpenseFilterType  // Rename the type import to avoid conflict
+} from '../../../../types';
 
 /**
  * ExpenseTracker Component
  * 
  * Handles expense creation, filtering, and display.
  */
-const ExpenseTracker = ({
+const ExpenseTracker: React.FC<ExpenseTrackerProps> = ({
   expenses: initialExpenses = [],
   expensesByCategory = {},
   colors = [],
-  onExpensesChange = () => { }
+  onExpensesChange = () => {}
 }) => {
+  // Use category context
   const { categories, loading: categoriesLoading } = useCategories();
-  const [expenses, setExpenses] = useState(initialExpenses);
-  const [category, setCategory] = useState('Food');
-  const [amount, setAmount] = useState('');
-  const [expenseDate, setExpenseDate] = useState(new Date().toISOString().split('T')[0]);
-  const [formErrors, setFormErrors] = useState({});
-  const [filter, setFilter] = useState({ startDate: '', endDate: '', category: 'All' });
-  const [filteredExpenses, setFilteredExpenses] = useState([]);
-  const [messages, setMessages] = useState({ success: '', error: '' });
-  const [categoryList, setCategoryList] = useState([]);
-  const [loading, setLoading] = useState(false);
+  
+  // State management with proper types
+  const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [filter, setFilter] = useState<ExpenseFilterType>({ 
+    startDate: '', 
+    endDate: '', 
+    category: 'All' 
+  });
+  const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
+  const [messages, setMessages] = useState<MessageState>({ success: '', error: '' });
+  const [categoryList, setCategoryList] = useState<string[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
   /** Load categories & expenses on mount */
   useEffect(() => {
-    const loadData = async () => {
+    const loadData = async (): Promise<void> => {
       try {
-        const [cats, exps] = await Promise.all([api.get('/categories'), api.get('/expenses')]);
+        const [cats, exps] = await Promise.all([
+          api.get<ApiSuccess<string[]>>('/categories'), 
+          api.get<ApiSuccess<Expense[]>>('/expenses')
+        ]);
         setCategoryList(cats.data);
         setExpenses(exps.data);
         setFilteredExpenses(exps.data);
-      } catch {
-        setMessages({ ...messages, error: 'Failed to load expenses' });
+      } catch (error) {
+        setMessages(prev => ({ ...prev, error: 'Failed to load expenses' }));
       }
     };
     loadData();
@@ -49,46 +66,53 @@ const ExpenseTracker = ({
   /** Filter expenses when filter or data changes */
   useEffect(() => {
     const filtered = expenses.filter((e) => {
+      const expenseDate = e.date || e.expense_date;
+      
       const inDateRange =
-        (!filter.startDate || new Date(e.date) >= new Date(filter.startDate)) &&
-        (!filter.endDate || new Date(e.date) <= new Date(filter.endDate));
+        (!filter.startDate || new Date(expenseDate as string) >= new Date(filter.startDate)) &&
+        (!filter.endDate || new Date(expenseDate as string) <= new Date(filter.endDate));
+        
       const inCategory = filter.category === 'All' || e.category === filter.category;
+      
       return inDateRange && inCategory;
     });
+    
     setFilteredExpenses(filtered);
   }, [expenses, filter]);
 
-  /** Handle form submission */
-  const handleAddExpense = async (e) => {
-    e.preventDefault();
-    const errors = validateExpenseForm(amount, expenseDate);
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
-      return;
-    }
-
+  /** Handle adding a new expense */
+  const handleAddExpense = async (expenseForm: ExpenseForm): Promise<boolean> => {
     setLoading(true);
+    
     try {
-      const parsedAmount = parseFloat(amount);
+      const parsedAmount = typeof expenseForm.amount === 'string' 
+        ? parseFloat(expenseForm.amount) 
+        : expenseForm.amount;
+      
       const newExpense = {
-        category,
+        category: expenseForm.category,
         amount: parsedAmount,
-        date: new Date(expenseDate).toISOString()
+        date: new Date(expenseForm.date).toISOString()
       };
-      const response = await api.post('/expenses', newExpense);
+      
+      const response = await api.post<ApiSuccess<{expense: Expense}>>('/expenses', newExpense);
       const updatedExpenses = [...expenses, response.data.expense];
+      
       setExpenses(updatedExpenses);
       setFilteredExpenses(updatedExpenses);
       onExpensesChange(updatedExpenses);
 
+      // Show success message
       setMessages({ success: 'Expense added successfully!', error: '' });
-      setAmount('');
-      setExpenseDate(new Date().toISOString().split('T')[0]);
+      setTimeout(() => setMessages({ success: '', error: '' }), 3000);
+      
+      return true;
     } catch (err) {
       setMessages({ error: 'Failed to add expense', success: '' });
+      setTimeout(() => setMessages({ success: '', error: '' }), 3000);
+      return false;
     } finally {
       setLoading(false);
-      setTimeout(() => setMessages({ success: '', error: '' }), 3000);
     }
   };
 
@@ -96,34 +120,33 @@ const ExpenseTracker = ({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
       {/* Notifications */}
       {messages.success && <Alert type="success" message={messages.success} />}
       {messages.error && <Alert type="error" message={messages.error} />}
 
       {/* Expense Form */}
       <AddExpenseForm
-        category={category}
-        amount={amount}
-        expenseDate={expenseDate}
-        onCategoryChange={setCategory}
-        onAmountChange={setAmount}
-        onDateChange={setExpenseDate}
-        onSubmit={handleAddExpense}
-        formErrors={formErrors}
         categories={categories}
-        loading={categoriesLoading}
-        submitLoading={loading}
+        onAddExpense={handleAddExpense}
+        formErrors={formErrors}
+        loading={loading}
       />
 
       {/* Filter */}
-      <ExpenseFilter filter={filter} setFilter={setFilter} categories={categories} />
+      <ExpenseFilter 
+        filter={filter} 
+        setFilter={setFilter} 
+        categories={categories} 
+      />
 
       {/* Recent Expenses Table */}
       <RecentExpensesTable expenses={filteredExpenses} />
 
       {/* Category Breakdown Chart */}
-      <CategoryBreakdownChart pieChartData={pieChartData} colors={colors} />
+      <CategoryBreakdownChart 
+        pieChartData={pieChartData} 
+        colors={colors} 
+      />
     </div>
   );
 };

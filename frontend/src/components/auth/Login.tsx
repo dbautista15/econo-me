@@ -1,93 +1,109 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { FormEvent, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import useForm from '../../hooks/useForm';
+import { AuthForm } from './AuthForm';
+import { validators } from '../../utils/validators';
 
+interface LoginFormData {
+  email: string;
+  password: string;
+}
 
-const Login = () => {
-  const [formData, setFormData] = useState({
+interface LoginFormErrors {
+  email?: string;
+  password?: string;
+}
+
+export const Login: React.FC = () => {
+  const { values, handleChange } = useForm<LoginFormData>({
     email: '',
     password: ''
   });
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState<LoginFormErrors>({});
+  const [generalError, setGeneralError] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const { email, password } = formData;
-
-  const onChange = e => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const validateForm = (): boolean => {
+    const newErrors: LoginFormErrors = {};
+    
+    // Validate email
+    if (!values.email) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(values.email)) {
+      newErrors.email = 'Email is invalid';
+    }
+    
+    // Validate password
+    if (!values.password) {
+      newErrors.password = 'Password is required';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  const onSubmit = async e => {
+  const onSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
-    setError('');
+    setGeneralError('');
     
-    const result = await login(email, password);
+    if (!validateForm()) {
+      return;
+    }
     
-    if (result.success) {
-      navigate('/dashboard');
-    } else {
-      setError(result.message);
+    setIsSubmitting(true);
+    
+    try {
+      const result = await login(values.email, values.password);
+      
+      if (result.success) {
+        navigate('/dashboard');
+      } else {
+        setGeneralError(result.message || 'Login failed');
+      }
+    } catch (error) {
+      setGeneralError('An unexpected error occurred');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
+  const fields = [
+    {
+      id: 'email',
+      name: 'email',
+      type: 'email',
+      label: 'Email',
+      value: values.email,
+      onChange: handleChange,
+      required: true,
+      error: errors.email
+    },
+    {
+      id: 'password',
+      name: 'password',
+      type: 'password',
+      label: 'Password',
+      value: values.password,
+      onChange: handleChange,
+      required: true,
+      error: errors.password
+    }
+  ];
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-center">Login</h1>
-        
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
-            {error}
-          </div>
-        )}
-        
-        <form onSubmit={onSubmit}>
-          <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="email">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={email}
-              onChange={onChange}
-              required
-            />
-          </div>
-          <div className="mb-6">
-            <label className="block text-gray-700 mb-2" htmlFor="password">
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={password}
-              onChange={onChange}
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-300"
-          >
-            Login
-          </button>
-        </form>
-        
-        <p className="mt-4 text-center text-gray-600">
-          Don't have an account? {' '}
-          <Link to="/register" className="text-blue-600 hover:underline">
-            Register
-          </Link>
-        </p>
-      </div>
-    </div>
+    <AuthForm
+      title="Login"
+      fields={fields}
+      onSubmit={onSubmit}
+      submitButtonText="Login"
+      error={generalError}
+      footerText="Don't have an account?"
+      footerLinkText="Register"
+      footerLinkTo="/register"
+      isSubmitting={isSubmitting}
+    />
   );
 };
-
-export default Login;

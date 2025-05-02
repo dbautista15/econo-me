@@ -1,130 +1,150 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { FormEvent, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import useForm from '../../hooks/useForm';
+import { AuthForm } from './AuthForm';
+import { validators } from '../../utils/validators';
 
+interface RegisterFormData {
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
 
-const Register = () => {
-  const [formData, setFormData] = useState({
+interface RegisterFormErrors {
+  username?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+}
+
+export const Register: React.FC = () => {
+  const { values, handleChange } = useForm<RegisterFormData>({
     username: '',
     email: '',
     password: '',
     confirmPassword: ''
   });
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState<RegisterFormErrors>({});
+  const [generalError, setGeneralError] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const navigate = useNavigate();
   const { register } = useAuth();
 
-  const { username, email, password, confirmPassword } = formData;
-
-  const onChange = e => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const validateForm = (): boolean => {
+    const newErrors: RegisterFormErrors = {};
+    
+    // Validate username
+    if (!values.username) {
+      newErrors.username = 'Username is required';
+    } else if (values.username.length < 3) {
+      newErrors.username = 'Username must be at least 3 characters';
+    }
+    
+    // Validate email
+    if (!values.email) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(values.email)) {
+      newErrors.email = 'Email is invalid';
+    }
+    
+    // Validate password
+    if (!values.password) {
+      newErrors.password = 'Password is required';
+    } else if (values.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters';
+    }
+    
+    // Validate password confirmation
+    if (values.password !== values.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  const onSubmit = async e => {
+  const onSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
-    setError('');
+    setGeneralError('');
     
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
+    if (!validateForm()) {
       return;
     }
     
-    const result = await register(username, email, password);
+    setIsSubmitting(true);
     
-    if (result.success) {
-      navigate('/dashboard');
-    } else {
-      setError(result.message);
+    try {
+      const result = await register(values.username, values.email, values.password);
+      
+      if (result.success) {
+        navigate('/dashboard');
+      } else {
+        setGeneralError(result.message || 'Registration failed');
+      }
+    } catch (error) {
+      setGeneralError('An unexpected error occurred');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
+  const fields = [
+    {
+      id: 'username',
+      name: 'username',
+      type: 'text',
+      label: 'Username',
+      value: values.username,
+      onChange: handleChange,
+      required: true,
+      error: errors.username
+    },
+    {
+      id: 'email',
+      name: 'email',
+      type: 'email',
+      label: 'Email',
+      value: values.email,
+      onChange: handleChange,
+      required: true,
+      error: errors.email
+    },
+    {
+      id: 'password',
+      name: 'password',
+      type: 'password',
+      label: 'Password',
+      value: values.password,
+      onChange: handleChange,
+      required: true,
+      minLength: 8,
+      error: errors.password
+    },
+    {
+      id: 'confirmPassword',
+      name: 'confirmPassword',
+      type: 'password',
+      label: 'Confirm Password',
+      value: values.confirmPassword,
+      onChange: handleChange,
+      required: true,
+      error: errors.confirmPassword
+    }
+  ];
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-center">Register</h1>
-        
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
-            {error}
-          </div>
-        )}
-        
-        <form onSubmit={onSubmit}>
-          <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="username">
-              Username
-            </label>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={username}
-              onChange={onChange}
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="email">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={email}
-              onChange={onChange}
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="password">
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={password}
-              onChange={onChange}
-              required
-              minLength="8"
-            />
-          </div>
-          <div className="mb-6">
-            <label className="block text-gray-700 mb-2" htmlFor="confirmPassword">
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={confirmPassword}
-              onChange={onChange}
-              required
-              minLength="8"
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-300"
-          >
-            Register
-          </button>
-        </form>
-        
-        <p className="mt-4 text-center text-gray-600">
-          Already have an account? {' '}
-          <Link to="/login" className="text-blue-600 hover:underline">
-            Login
-          </Link>
-        </p>
-      </div>
-    </div>
+    <AuthForm
+      title="Register"
+      fields={fields}
+      onSubmit={onSubmit}
+      submitButtonText="Register"
+      error={generalError}
+      footerText="Already have an account?"
+      footerLinkText="Login"
+      footerLinkTo="/login"
+      isSubmitting={isSubmitting}
+    />
   );
 };
-
-export default Register;

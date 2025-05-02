@@ -1,10 +1,49 @@
-import React from 'react';
+import React, { FormEvent, ChangeEvent, useState } from 'react';
+import { ExpenseForm, AddExpenseFormProps } from '../../../../types';
 
-const AddExpenseForm = ({ categories, newExpense, setNewExpense, onAddExpense }) => {
+
+const AddExpenseForm: React.FC<AddExpenseFormProps> = ({
+  categories,
+  onAddExpense
+}) => {
+  // Internal state management
+  const [expense, setExpense] = useState<ExpenseForm>({
+    category: categories[0] || '',
+    amount: '',
+    date: new Date().toISOString().split('T')[0]
+  });
+
+  // Handler for updating form fields
+  const handleInputChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    field: keyof ExpenseForm
+  ): void => {
+    setExpense({
+      ...expense,
+      [field]: e.target.value
+    });
+  };
+  
+  // Handle form submission
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
+    e.preventDefault();
+    
+    const success = await onAddExpense(expense);
+    
+    // Reset form on success
+    if (success) {
+      setExpense({
+        category: categories[0] || '',
+        amount: '',
+        date: new Date().toISOString().split('T')[0]
+      });
+    }
+  };
+
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
       <h2 className="text-xl font-semibold mb-4">Add New Expense</h2>
-      <form onSubmit={onAddExpense}>
+      <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label className="block text-gray-700 mb-2" htmlFor="category">
             Category
@@ -12,8 +51,8 @@ const AddExpenseForm = ({ categories, newExpense, setNewExpense, onAddExpense })
           <select
             id="category"
             className="w-full p-2 border border-gray-300 rounded-md"
-            value={newExpense.category}
-            onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value })}
+            value={expense.category}
+            onChange={(e) => handleInputChange(e, 'category')}
             required
           >
             <option value="">Select a category</option>
@@ -30,11 +69,11 @@ const AddExpenseForm = ({ categories, newExpense, setNewExpense, onAddExpense })
           <input
             id="amount"
             type="number"
-            min="0.00"
-  
+            min="0.01"
+            step="0.01"
             className="w-full p-2 border border-gray-300 rounded-md"
-            value={newExpense.amount}
-            onChange={(e) => setNewExpense({ ...newExpense, amount: e.target.value })}
+            value={expense.amount}
+            onChange={(e) => handleInputChange(e, 'amount')}
             required
           />
         </div>
@@ -47,8 +86,8 @@ const AddExpenseForm = ({ categories, newExpense, setNewExpense, onAddExpense })
             id="date"
             type="date"
             className="w-full p-2 border border-gray-300 rounded-md"
-            value={newExpense.date}
-            onChange={(e) => setNewExpense({ ...newExpense, date: e.target.value })}
+            value={expense.date}
+            onChange={(e) => handleInputChange(e, 'date')}
             required
           />
         </div>

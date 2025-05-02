@@ -4,18 +4,20 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   LineChart, Line
 } from 'recharts';
+import { ChartDataPoint, LineChartDataPoint, StackedBarChartDataPoint } from '../../../../types';
+import { transformations } from '../../utils/transformations';
+import { chartUtils } from '../../utils/chartUtils';
 
 /**
- * Renders a responsive pie chart for expense category distribution.
- * @param {Array} data - Array of objects with `name` and `value`
- * @param {Array} colors - Color palette for chart segments
- * @returns {JSX.Element}
+ * Renders a responsive pie chart for expense category distribution
  */
-// Pie chart for expense distribution
-export const renderPieChart = (data, colors) => {
-  // Add this line for the totalValue calculation
-  const totalValue = data.reduce((sum, item) => sum + (item.value || 0), 0);
-  
+export const renderPieChart = (
+  data: ChartDataPoint[],
+  colors: string[]
+): React.ReactElement => {
+  // Calculate total for percentage formatting
+  const totalValue = transformations.sumValues(data.map(item => item.value || 0));
+
   return (
     <ResponsiveContainer width="100%" height={300}>
       <PieChart>
@@ -27,32 +29,34 @@ export const renderPieChart = (data, colors) => {
           outerRadius={80}
           fill="#8884d8"
           dataKey="value"
-          // Remove the label property to hide permanent labels
         >
           {data.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
           ))}
         </Pie>
-        <Tooltip formatter={(value) => `${((value / totalValue) * 100).toFixed(0)}%`} />
+        <Tooltip 
+          formatter={(value: number) => 
+            `${transformations.formatPercentage(transformations.calculatePercentage(value, totalValue))}%`
+          } 
+        />
         <Legend
-        layout="horizontal"
-        verticalAlign="bottom"
-        align="center"
-        wrapperStyle={{ paddingTop: "20px" }}
-      />
+          layout="horizontal"
+          verticalAlign="bottom"
+          align="center"
+          wrapperStyle={{ paddingTop: "20px" }}
+        />
       </PieChart>
     </ResponsiveContainer>
   );
 };
 
-
 /**
- * Renders a bar chart for category breakdown of expenses.
- * @param {Array} data - Array with `name` and `value` keys
- * @param {Array} colors - Color palette for bars
- * @returns {JSX.Element}
+ * Renders a bar chart for category breakdown of expenses
  */
-export const renderBarChart = (data, colors) => {
+export const renderBarChart = (
+  data: ChartDataPoint[],
+  colors: string[]
+): React.ReactElement => {
   if (!Array.isArray(data) || data.length === 0) {
     return <p>No spending data to display</p>;
   }
@@ -62,8 +66,8 @@ export const renderBarChart = (data, colors) => {
       <BarChart data={data}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="name" />
-        <YAxis tickFormatter={(value) => `$${value}`} />
-        <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+        <YAxis tickFormatter={(value: number) => `$${transformations.formatCurrency(value)}`} />
+        <Tooltip formatter={(value: number) => `$${transformations.formatCurrency(value)}`} />
         <Legend />
         <Bar dataKey="value" fill="#8884d8" animationDuration={1500}>
           {data.map((entry, index) => (
@@ -75,19 +79,18 @@ export const renderBarChart = (data, colors) => {
   );
 };
 
-
 /**
- * Renders a line chart comparing income and expenses over time.
- * @param {Array} data - Array of objects with `name`, `income`, and `expenses`
- * @returns {JSX.Element}
+ * Renders a line chart comparing income and expenses over time
  */
-export const renderLineChart = (data) => (
+export const renderLineChart = (
+  data: LineChartDataPoint[]
+): React.ReactElement => (
   <ResponsiveContainer width="100%" height={300}>
     <LineChart data={data}>
       <CartesianGrid strokeDasharray="3 3" />
       <XAxis dataKey="name" />
-      <YAxis tickFormatter={(value) => `$${value}`} />
-      <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+      <YAxis tickFormatter={(value: number) => `$${transformations.formatCurrency(value)}`} />
+      <Tooltip formatter={(value: number) => `$${transformations.formatCurrency(value)}`} />
       <Legend />
       <Line
         type="monotone"
@@ -108,21 +111,20 @@ export const renderLineChart = (data) => (
   </ResponsiveContainer>
 );
 
-
 /**
- * Renders a stacked bar chart for monthly breakdown by category.
- * @param {Array} data - Array of monthly data with category keys
- * @param {Array} categories - Array of category names
- * @param {Array} colors - Color palette for stacks
- * @returns {JSX.Element}
+ * Renders a stacked bar chart for monthly breakdown by category
  */
-export const renderStackedBarChart = (data, categories, colors) => (
+export const renderStackedBarChart = (
+  data: StackedBarChartDataPoint[],
+  categories: string[],
+  colors: string[]
+): React.ReactElement => (
   <ResponsiveContainer width="100%" height={400}>
     <BarChart data={data}>
       <CartesianGrid strokeDasharray="3 3" />
       <XAxis dataKey="name" />
-      <YAxis tickFormatter={(value) => `$${value}`} />
-      <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+      <YAxis tickFormatter={(value: number) => `$${transformations.formatCurrency(value)}`} />
+      <Tooltip formatter={(value: number) => `$${transformations.formatCurrency(value)}`} />
       <Legend />
       {categories.map((category, index) => (
         <Bar
@@ -135,3 +137,9 @@ export const renderStackedBarChart = (data, categories, colors) => (
     </BarChart>
   </ResponsiveContainer>
 );
+
+// Re-export chart utility functions
+export const {
+  preparePieChartData,
+  prepareMonthlyBreakdownData
+} = chartUtils;
