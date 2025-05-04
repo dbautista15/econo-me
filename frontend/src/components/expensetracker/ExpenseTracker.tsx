@@ -66,7 +66,7 @@ const ExpenseTracker: React.FC<ExpenseTrackerProps> = ({
   /** Filter expenses when filter or data changes */
   useEffect(() => {
     const filtered = expenses.filter((e) => {
-      const expenseDate = e.date || e.expense_date;
+      const expenseDate = e.expense_date;
       
       const inDateRange =
         (!filter.startDate || new Date(expenseDate as string) >= new Date(filter.startDate)) &&

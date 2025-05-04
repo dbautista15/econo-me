@@ -104,6 +104,19 @@ async function sendRequest<T>(
     // Check if request was successful
     if (!response.ok) {
       const errorData = responseData as ApiError;
+      
+      // Handle authentication errors
+      if (response.status === 401) {
+        // Clear auth token from storage
+        localStorage.removeItem('authToken'); // Adjust to your storage method
+        
+        // Redirect to login if not already there
+        const currentPath = window.location.pathname;
+        if (!currentPath.includes('/login')) {
+          window.location.href = '/login';
+        }
+      }
+      
       throw new Error(errorData.error || `Request failed with status ${response.status}`);
     }
     

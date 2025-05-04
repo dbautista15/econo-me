@@ -127,7 +127,7 @@ const DeleteExpenses: React.FC<DeleteExpensesProps> = ({ onSuccess, onError }) =
   };
 
   // Format amount helper
-  const formatAmount = (amount: number | string | undefined): string => {
+  const formatAmount = (amount: number | string ): string => {
     if (amount === undefined || amount === null) return '$0.00';
     return `$${parseFloat(amount as string).toFixed(2)}`;
   };

@@ -22,7 +22,7 @@ export const useIncomeManagement = (callbacks?: ApiStateCallbacks) => {
   };
   
   // Add income - matching FinancialSummaryProps.onAddIncome exactly
-  const addIncome = async (amount: number, date: string): Promise<boolean> => {
+  const addIncome = async ( amount: number, date: string): Promise<boolean> => {
     const [_, success] = await executeApiOperation(
       () => api.post<Income>('/incomes', { 
         amount: transformations.parseAmount(amount), 
@@ -34,12 +34,17 @@ export const useIncomeManagement = (callbacks?: ApiStateCallbacks) => {
     
     return success;
   };
-  
+  const simpleUpdateIncome = (amount: number): boolean => {
+    updateIncome(amount, "Income", new Date().toISOString().split('T')[0]);
+    return true;
+  };
   // Update income
-  const updateIncome = async (amount: number): Promise<boolean> => {
+  const updateIncome = async (id: number, amount: string, date: string): Promise<boolean> => {
     const [_, success] = await executeApiOperation(
-      () => api.post<Income>('/incomes/update', { 
-        amount: transformations.parseAmount(amount) 
+      () => api.put(`/incomes/${id}`, {
+        source: 'Income', // You might want to allow editing the source too
+        amount: transformations.parseAmount(amount),
+        income_date: date
       }),
       'Income updated successfully',
       'Failed to update income'
@@ -82,6 +87,7 @@ export const useIncomeManagement = (callbacks?: ApiStateCallbacks) => {
     fetchIncomes,
     addIncome,
     deleteIncome,
+    simpleUpdateIncome,
     updateIncome,
     deleteIncomes
   };

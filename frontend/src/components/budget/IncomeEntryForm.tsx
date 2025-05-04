@@ -15,17 +15,30 @@ interface IncomeFormErrors {
   date?: string;
 }
 
-export const IncomeEntryForm: React.FC = () => {
+interface IncomeEntryFormProps {
+  initialAmount?: string;
+  initialDate?: string;
+  onAddIncomeSuccess?: () => void;
+}
+
+export const IncomeEntryForm: React.FC<IncomeEntryFormProps> = ({ 
+  initialAmount = '',
+  initialDate = new Date().toISOString().split('T')[0],
+  onAddIncomeSuccess
+}) => {
   const { values, handleChange, resetForm } = useForm<IncomeFormData>({
-    amount: '',
-    date: new Date().toISOString().split('T')[0]
+    amount: initialAmount,
+    date: initialDate
   });
   
   const [errors, setErrors] = useState<IncomeFormErrors>({});
   const [generalError, setGeneralError] = useState<string>('');
   
   const { addIncome, loading } = useIncomeManagement({
-    onSuccess: () => resetForm(),
+    onSuccess: () => {
+      resetForm();
+      if (onAddIncomeSuccess) onAddIncomeSuccess();
+    },
     onError: (msg) => setGeneralError(msg)
   });
 

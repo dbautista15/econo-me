@@ -58,7 +58,7 @@ export const chartUtils = {
   
 	  expenses.forEach(expense => {
 		// Handle both date and expense_date fields for flexibility
-		const dateField = expense.date || expense.expense_date;
+		const dateField = expense.expense_date;
   
 		if (!dateField || !expense.category) {
 		  return; // Skip entries with missing required data

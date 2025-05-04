@@ -36,10 +36,14 @@ router.get('/db-check', async (req: Request, res: Response): Promise<void> => {
 router.get('/incomes', authMiddleware, wrapAuthenticatedHandler(controllers.getIncomes));
 router.post('/incomes', authMiddleware, wrapAuthenticatedHandler(controllers.addIncome));
 router.delete('/incomes/:id', authMiddleware, wrapAuthenticatedHandler(controllers.deleteIncome));
+router.put('/incomes/:id', authMiddleware, wrapAuthenticatedHandler(controllers.updateIncome));
 
 // Savings goal routes
 router.get('/savings-goals', authMiddleware, wrapAuthenticatedHandler(controllers.getSavingsGoals));
 router.post('/savings-goals', authMiddleware, wrapAuthenticatedHandler(controllers.addSavingsGoal));
+router.put('/savings-goals/:id', authMiddleware, wrapAuthenticatedHandler(controllers.updateSavingsGoal));
+router.delete('/savings-goals/:id', authMiddleware, wrapAuthenticatedHandler(controllers.deleteSavingsGoal));
+
 
 router.get('/categories',controllers.getCategories);
 

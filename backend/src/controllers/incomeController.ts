@@ -85,3 +85,34 @@ export const deleteIncome: AuthenticatedRouteHandler = async (req, res) => {
     });
   }
 };
+/**
+ * Update an income record
+ */
+export const updateIncome: AuthenticatedRouteHandler = async (req, res) => {
+  const { id } = req.params;
+  const { source, amount, income_date } = req.body;
+  const userId = req.user.id;
+  const pool = databaseManager.getPool();
+
+  try {
+    const result: QueryResult<Income> = await pool.query(
+      'UPDATE incomes SET source = $1, amount = $2, income_date = $3 WHERE id = $4 AND user_id = $5 RETURNING *',
+      [source, amount, income_date, id, userId]
+    );
+
+    if (result.rows.length === 0) {
+      res.status(404).json({ message: 'Income not found or unauthorized' });
+      return;
+    }
+
+    res.status(200).json({
+      message: 'Income updated successfully',
+      income: result.rows[0]
+    });
+  } catch (error) {
+    console.error('Error updating income:', error);
+    res.status(500).json({ 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    });
+  }
+};

@@ -1,9 +1,9 @@
 import { Response } from 'express';
 import { databaseManager } from '../utils/db';
 import { QueryResult } from 'pg';
-import { 
-  AuthenticatedRequest, 
-  Budget 
+import {
+  AuthenticatedRequest,
+  Budget
 } from '../types';
 
 export const createBudget = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
@@ -34,8 +34,8 @@ export const createBudget = async (req: AuthenticatedRequest, res: Response): Pr
       budget: result.rows[0]
     });
   } catch (error) {
-    res.status(500).json({ 
-      error: error instanceof Error ? error.message : 'Unknown error' 
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 };
@@ -51,8 +51,8 @@ export const getBudgets = async (req: AuthenticatedRequest, res: Response): Prom
     );
     res.status(200).json(result.rows);
   } catch (error) {
-    res.status(500).json({ 
-      error: error instanceof Error ? error.message : 'Unknown error' 
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 };
@@ -62,6 +62,13 @@ export const updateBudget = async (req: AuthenticatedRequest, res: Response): Pr
   const { limit } = req.body;
   const userId = req.user.id;
   const pool = databaseManager.getPool();
+
+  if (limit === undefined || limit === null) {
+    res.status(400).json({ 
+      error: 'Budget limit is required'
+    });
+    return;
+  }
 
   try {
     const result: QueryResult<Budget> = await pool.query(
@@ -79,8 +86,8 @@ export const updateBudget = async (req: AuthenticatedRequest, res: Response): Pr
       budget: result.rows[0]
     });
   } catch (error) {
-    res.status(500).json({ 
-      error: error instanceof Error ? error.message : 'Unknown error' 
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 };
@@ -92,7 +99,7 @@ export const deleteBudget = async (req: AuthenticatedRequest, res: Response): Pr
 
   try {
     const result: QueryResult<Budget> = await pool.query(
-      'DELETE FROM budgets WHERE id = $1 AND user_id = $2 RETURNING *', 
+      'DELETE FROM budgets WHERE id = $1 AND user_id = $2 RETURNING *',
       [id, userId]
     );
 
@@ -106,8 +113,8 @@ export const deleteBudget = async (req: AuthenticatedRequest, res: Response): Pr
       budget: result.rows[0]
     });
   } catch (error) {
-    res.status(500).json({ 
-      error: error instanceof Error ? error.message : 'Unknown error' 
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 };

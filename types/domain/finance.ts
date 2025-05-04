@@ -10,7 +10,6 @@ export interface Expense {
 	description?: string;
 	user_id?: number;
 	created_at?: string | Date;
-	date?: string; // For compatibility with existing code
   }
   
   export interface Income {
@@ -32,7 +31,7 @@ export interface Expense {
   }
   
   export interface SavingsGoal {
-	id?: number;
+	id: number;
 	name: string;
 	target_amount: number;
 	current_amount: number;
@@ -40,6 +39,14 @@ export interface Expense {
 	user_id?: number;
 	created_at?: Date;
   }
+  export interface SavingsGoalForm {
+	id:number
+	name: string;
+	targetAmount: string;
+	currentAmount?: string;
+	targetDate?: string;
+  }
+  
   
   export interface RawSuggestion {
 	daily: string;  // The raw value from calculations (as string)

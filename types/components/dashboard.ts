@@ -1,4 +1,4 @@
-import { Expense, Income, CategorySummary, Suggestion} from '../domain/finance';
+import { Expense, Income, CategorySummary, Suggestion,SavingsGoal} from '../domain/finance';
 import type { ExpenseFilter } from './expense'; // Import the type from expense.ts instead of the component
 
 /**
@@ -9,8 +9,8 @@ export interface DashboardProps {
   // Financial data
   income: number;
   incomes: Income[];
-  savingsGoal: number;
-  spendingLimit: number;
+  savingsGoal:number;
+  savingsGoals: SavingsGoal[];// Add this line  spendingLimit: number;
   expenses: Expense[];
   categories: string[];
   expensesByCategory: CategorySummary;
@@ -24,6 +24,7 @@ export interface DashboardProps {
   budgetPercentage: number;
   isOverBudget: boolean;
   suggestion: Suggestion | null;
+  spendingLimit: number;
   
   // Functions
   fetchData: () => Promise<void>;

@@ -1,9 +1,14 @@
 import React from 'react';
-import { Expense,RecentExpensesTableProps } from '../../../../types';
+import { Expense, RecentExpensesTableProps } from '../../../../types';
+import { transformations } from '../../utils/transformations';
 
 const RecentExpensesTable: React.FC<RecentExpensesTableProps> = ({ expenses }) => {
   // Helper function to format currency values
-  const formatCurrency = (amount: number): string => {
+  const formatCurrency = (amount: number | string): string => {
+    // Ensure the amount is a number before using toFixed
+    if (typeof amount === 'string') {
+      return parseFloat(amount).toFixed(2);
+    }
     return amount.toFixed(2);
   };
 
@@ -15,7 +20,14 @@ const RecentExpensesTable: React.FC<RecentExpensesTableProps> = ({ expenses }) =
 
   // Calculate total expenses
   const calculateTotal = (): number => {
-    return expenses.reduce((sum, expense) => sum + expense.amount, 0);
+    return expenses.reduce((sum, expense) => {
+      // Ensure amount is treated as a number
+      const amount = typeof expense.amount === 'string' 
+        ? parseFloat(expense.amount) 
+        : expense.amount;
+      
+      return sum + amount;
+    }, 0);
   };
 
   return (
@@ -38,7 +50,9 @@ const RecentExpensesTable: React.FC<RecentExpensesTableProps> = ({ expenses }) =
                 <tr key={expense.id || index}>
                   <td className="px-4 py-2">{formatDate(expense.expense_date)}</td>
                   <td className="px-4 py-2">{expense.category}</td>
-                  <td className="px-4 py-2 text-right">${formatCurrency(expense.amount)}</td>
+                  <td className="px-4 py-2 text-right">
+                    ${formatCurrency(expense.amount)}
+                  </td>
                 </tr>
               ))}
             </tbody>

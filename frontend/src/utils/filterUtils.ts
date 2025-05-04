@@ -23,7 +23,7 @@ export const filterUtils = {
    */
   byDateRange: (expenses: Expense[], filter: DateRangeFilter): Expense[] => {
     return expenses.filter(expense => {
-      const date = expense.date || expense.expense_date;
+      const date = expense.expense_date;
       const inStartRange = !filter.startDate || new Date(date as string) >= new Date(filter.startDate);
       const inEndRange = !filter.endDate || new Date(date as string) <= new Date(filter.endDate);
       return inStartRange && inEndRange;
@@ -43,7 +43,7 @@ export const filterUtils = {
    */
   filterExpenses: (expenses: Expense[], filter: ExpenseFilterCriteria): Expense[] => {
     return expenses.filter(expense => {
-      const date = expense.date || expense.expense_date;
+      const date = expense.expense_date;
       const inDateRange = 
         (!filter.startDate || new Date(date as string) >= new Date(filter.startDate)) &&
         (!filter.endDate || new Date(date as string) <= new Date(filter.endDate));

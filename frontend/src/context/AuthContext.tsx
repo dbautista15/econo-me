@@ -31,11 +31,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } else {
       api.removeAuthHeader();
     }
-  }, []);
+  }, [token]);
 
 // Update the useEffect hook that runs when token changes
 useEffect(() => {
+  console.log('Auth context mounted/updated');
+  return () => console.log('Auth context unmounted');
   const loadUser = async (): Promise<void> => {
+    
     if (!token) {
       setLoading(false);
       return;
