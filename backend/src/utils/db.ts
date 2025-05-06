@@ -10,7 +10,10 @@ class DatabaseManager {
   constructor() {
     // PostgreSQL Connection Pool
     this.pool = new Pool({
-      connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/econo-me'
+      connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/econo-me',
+      ssl: process.env.NODE_ENV === 'production' ? {
+        rejectUnauthorized: false 
+      } : undefined
     });
 
     // Error handler for unexpected pool errors
