@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../utils/api';
-import { renderBarChart } from '../layout/ui/Charts';
+import { renderBarChart, renderLineChart } from '../layout/ui/Charts';
 import { chartUtils } from '../../utils/chartUtils';
 import { transformations } from '../../utils/transformations';
 import { LoadingSpinner } from '../layout/ui/LoadingSpinner';
+import { LineChartDataPoint } from '../../../../types';
+import { LineChart } from 'recharts';
 
 export interface CategoryBudgetManagerProps {
   onSuccess?: (message: string) => void;
@@ -11,9 +13,9 @@ export interface CategoryBudgetManagerProps {
   refreshData?: () => void;
 }
 
-export const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({ 
-  onSuccess, 
-  onError 
+export const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
+  onSuccess,
+  onError
 }) => {
   // State management
   const [categories, setCategories] = useState<string[]>([]);
@@ -26,23 +28,79 @@ export const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [deleteConfirmCategory, setDeleteConfirmCategory] = useState<string | null>(null);
+  const [monthlyData, setMonthlyData] = useState<LineChartDataPoint[]>([]);
 
   // Generate colors for the chart
   const chartColors = chartUtils.generateCategoryColors(categories);
+
+  // Format monthly income and expense data for the line chart
+  const prepareMonthlyComparisonData = (expenses: any[], incomes: any[]): LineChartDataPoint[] => {
+    const monthlyExpenses: Record<string, number> = {};
+    const monthlyIncomes: Record<string, number> = {};
+
+    // Process expenses
+    expenses.forEach(expense => {
+      const date = new Date(expense.expense_date);
+      if (!isNaN(date.getTime())) {
+        const month = date.toLocaleString('default', { month: 'short' });
+        monthlyExpenses[month] = (monthlyExpenses[month] || 0) + transformations.parseAmount(expense.amount);
+      }
+    });
+
+    // Process incomes
+    incomes.forEach(income => {
+      const date = new Date(income.income_date);
+      if (!isNaN(date.getTime())) {
+        const month = date.toLocaleString('default', { month: 'short' });
+        monthlyIncomes[month] = (monthlyIncomes[month] || 0) + transformations.parseAmount(income.amount);
+      }
+    });
+
+    // Combine data and sort by month
+    const allMonths: string[] = [];
+
+    // Add months from expenses
+    Object.keys(monthlyExpenses).forEach(month => {
+      if (allMonths.indexOf(month) === -1) {
+        allMonths.push(month);
+      }
+    });
+
+    // Add months from incomes
+    Object.keys(monthlyIncomes).forEach(month => {
+      if (allMonths.indexOf(month) === -1) {
+        allMonths.push(month);
+      }
+    });
+
+    // Define month order for consistent display
+    const monthOrder = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+
+    return allMonths
+      .sort((a, b) => monthOrder.indexOf(a) - monthOrder.indexOf(b))
+      .map(month => ({
+        name: month,
+        expenses: monthlyExpenses[month] || 0,
+        income: monthlyIncomes[month] || 0
+      }));
+  };
 
   // Fetch data from API
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       // Fetch categories
       const categoriesData = await api.get<string[]>('/categories');
       setCategories(Array.isArray(categoriesData) ? categoriesData : []);
-      
+
       // Fetch expenses
       const expensesData = await api.get<any[]>('/expenses');
-      
+
       // Calculate expenses by category
       if (Array.isArray(expensesData)) {
         const byCategory: Record<string, number> = {};
@@ -51,17 +109,26 @@ export const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
           byCategory[cat] = (byCategory[cat] || 0) + transformations.parseAmount(expense.amount);
         });
         setExpensesByCategory(byCategory);
+
+        // Fetch income data for the line chart
+        const incomesData = await api.get<any[]>('/incomes');
+
+        // Prepare monthly comparison data
+        if (Array.isArray(incomesData)) {
+          const monthlyComparisonData = prepareMonthlyComparisonData(expensesData, incomesData);
+          setMonthlyData(monthlyComparisonData);
+        }
       }
-      
+
       // Fetch budget limits
       const budgetsData = await api.get<any[]>('/budgets');
-      
+
       // Store raw budget objects for update/delete operations
       if (Array.isArray(budgetsData)) {
         // Filter out the Total budget
         const categoryBudgets = budgetsData.filter(b => b.category !== 'Total');
         setBudgetObjects(categoryBudgets);
-        
+
         // Process budget data into a more usable format
         const budgets: Record<string, number> = {};
         categoryBudgets.forEach(budget => {
@@ -80,7 +147,7 @@ export const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
       setLoading(false);
     }
   }, [onError]);
-  
+
   // Initial data load
   useEffect(() => {
     fetchData();
@@ -100,15 +167,15 @@ export const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
   // Save a single budget
   const handleSaveBudget = async (category: string) => {
     if (editedBudgets[category] === undefined) return;
-    
+
     setLoading(true);
     setError(null);
-    
+
     try {
       const amount = editedBudgets[category];
       // Find if budget already exists
       const existingBudget = budgetObjects.find(b => b.category === category);
-      
+
       if (existingBudget) {
         // Update existing budget - IMPORTANT: Change limit_amount to limit
         console.log(`Updating budget for ${category} with amount ${amount}`);
@@ -124,13 +191,13 @@ export const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
           limit: amount  // Changed from limit_amount to limit
         });
       }
-      
+
       // Show success message
       const message = `Budget for ${category} saved successfully`;
       setSuccessMessage(message);
       if (onSuccess) onSuccess(message);
       setTimeout(() => setSuccessMessage(null), 3000);
-      
+
       // Refresh data
       fetchData();
     } catch (err) {
@@ -147,18 +214,18 @@ export const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
   const handleSaveAllBudgets = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       let savedCount = 0;
-      
+
       // Process each budget
       for (const [category, amount] of Object.entries(editedBudgets)) {
         // Skip categories with no budget set
         if (amount === undefined) continue;
-        
+
         // Find existing budget
         const existingBudget = budgetObjects.find(b => b.category === category);
-        
+
         try {
           if (existingBudget) {
             // Update existing budget - IMPORTANT: Change limit_amount to limit
@@ -178,14 +245,14 @@ export const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
           console.error(`Error saving budget for ${category}:`, err);
         }
       }
-      
+
       // Show success message
-      const message = savedCount > 0 
-        ? `Successfully saved ${savedCount} budget${savedCount > 1 ? 's' : ''}` 
+      const message = savedCount > 0
+        ? `Successfully saved ${savedCount} budget${savedCount > 1 ? 's' : ''}`
         : 'No budgets saved';
       setSuccessMessage(message);
       if (onSuccess) onSuccess(message);
-      
+
       // Refresh data
       fetchData();
     } catch (err) {
@@ -202,29 +269,29 @@ export const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
   const handleDeleteBudget = async (category: string) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       // Find the budget ID
       const budget = budgetObjects.find(b => b.category === category);
-      
+
       if (budget) {
         // Delete the budget
         await api.delete(`/budgets/${budget.id}`);
-        
+
         // Update local state
         const updatedBudgets = { ...categoryBudgets };
         delete updatedBudgets[category];
         setCategoryBudgets(updatedBudgets);
-        
+
         const updatedEditedBudgets = { ...editedBudgets };
         delete updatedEditedBudgets[category];
         setEditedBudgets(updatedEditedBudgets);
-        
+
         // Show success message
         const message = `Budget for ${category} deleted successfully`;
         setSuccessMessage(message);
         if (onSuccess) onSuccess(message);
-        
+
         // Refresh data
         fetchData();
       }
@@ -267,13 +334,13 @@ export const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
           {error}
         </div>
       )}
-      
+
       {successMessage && (
         <div className="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
           {successMessage}
         </div>
       )}
-      
+
       <div className="flex border-b mb-4">
         {['chart', 'budget'].map(tab => (
           <button
@@ -281,23 +348,37 @@ export const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
             className={`px-4 py-2 font-medium ${activeTab === tab ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
             onClick={() => setActiveTab(tab as 'chart' | 'budget')}
           >
-            {tab === 'chart' ? 'Spending Breakdown' : 'Budget Management'}
+            {tab === 'chart' ? 'Income vs Expenses' : 'Budget Management'}
           </button>
         ))}
       </div>
 
       {activeTab === 'chart' ? (
-        <div className="h-64">
-          {chartData.length > 0 ? (
-            renderBarChart(
-              chartData,
-              chartColors
-            )
-          ) : (
-            <div className="flex h-full items-center justify-center">
-              <p className="text-gray-500">No spending data to display</p>
+        <div>
+          <div className="mb-4">
+            <p className="text-sm text-gray-600">
+              This chart shows your monthly income compared to your expenses, helping you track your spending habits over time.
+            </p>
+          </div>
+          <div className="h-64">
+            {monthlyData.length > 0 ? (
+              renderLineChart(monthlyData)
+            ) : (
+              <div className="flex h-full items-center justify-center">
+                <p className="text-gray-500">No income or expense data to display</p>
+              </div>
+            )}
+          </div>
+          <div className="mt-4 text-xs text-gray-500 flex justify-between">
+            <div>
+              <span className="inline-block w-3 h-3 bg-[#8884d8] mr-1"></span>
+              <span>Income</span>
             </div>
-          )}
+            <div>
+              <span className="inline-block w-3 h-3 bg-[#82ca9d] mr-1"></span>
+              <span>Expenses</span>
+            </div>
+          </div>
         </div>
       ) : (
         <div className="space-y-6">
@@ -313,7 +394,7 @@ export const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
             categories.map((category) => {
               // Skip the "Total" category as it's handled separately
               if (category === "Total") return null;
-              
+
               const spent = expensesByCategory[category] || 0;
               const budget = editedBudgets[category] || 0;
               const percentage = getCategoryBudgetPercentage(category);
@@ -341,7 +422,7 @@ export const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
                       </div>
                     </div>
                   ) : null}
-                  
+
                   <div className="flex justify-between items-center mb-2">
                     <h3 className="font-medium">{category}</h3>
                     <div className="flex items-center">
@@ -376,7 +457,7 @@ export const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
                       {budget > 0 ? `$${transformations.formatCurrency(Math.max(0, budget - spent))} remaining` : ''}
                     </span>
                   </div>
-                  
+
                   {/* Individual budget actions */}
                   <div className="flex justify-end mt-2 pt-2 border-t border-gray-100">
                     <button
@@ -386,7 +467,7 @@ export const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
                     >
                       Save
                     </button>
-                    
+
                     {existingBudget && (
                       <button
                         onClick={() => setDeleteConfirmCategory(category)}
