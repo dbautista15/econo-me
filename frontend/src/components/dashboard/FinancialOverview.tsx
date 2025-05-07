@@ -88,7 +88,7 @@ export const FinancialOverview: React.FC<FinancialOverview> = ({
 
           <div className="mb-6">
             <Progress
-              label={`Savings (${transformations.formatCurrency(savings)} of ${transformations.formatCurrency(savingsGoal)})`}
+              label={`Overall Financial Health (${transformations.formatCurrency(savings)} of ${transformations.formatCurrency(savingsGoal)})`}
               percent={savingsProgress}
               color="bg-blue-500"
             />
