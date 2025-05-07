@@ -13,6 +13,11 @@ describe('Budget Controller Tests', () => {
     authToken = generateTestToken(testUserId);
   });
   
+  // Important: Clear data BEFORE each test, not just after
+  beforeEach(async () => {
+    await clearUserData(testUserId);
+  });
+  
   afterEach(async () => {
     await clearUserData(testUserId);
   });
@@ -62,6 +67,7 @@ describe('Budget Controller Tests', () => {
     let budgetId: number;
     
     beforeEach(async () => {
+      // Make sure to create a unique category name for this test
       const budget = await createTestBudget(testUserId, 'Housing', 500);
       budgetId = budget.id;
     });
@@ -84,6 +90,7 @@ describe('Budget Controller Tests', () => {
     let budgetId: number;
     
     beforeEach(async () => {
+      // Make sure to create a unique category name for this test
       const budget = await createTestBudget(testUserId, 'Shopping', 300);
       budgetId = budget.id;
     });
@@ -118,15 +125,15 @@ describe('Budget Controller Tests', () => {
   
   describe('POST /api/budgets - Unhappy Path', () => {
     it('should return 400 when category already exists', async () => {
-      // First create a budget
-      await createTestBudget(testUserId, 'Entertainment', 150);
+      // First create a budget - use a different category name from other tests
+      await createTestBudget(testUserId, 'Entertainment2', 150);
       
       // Try to create the same category again
       const res = await request(app)
         .post('/api/budgets')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
-          category: 'Entertainment',
+          category: 'Entertainment2',
           limit: 200
         });
       
@@ -138,7 +145,7 @@ describe('Budget Controller Tests', () => {
       const res = await request(app)
         .post('/api/budgets')
         .send({
-          category: 'Entertainment',
+          category: 'Entertainment3',
           limit: 200
         });
       
@@ -150,7 +157,8 @@ describe('Budget Controller Tests', () => {
     let budgetId: number;
     
     beforeEach(async () => {
-      const budget = await createTestBudget(testUserId, 'Housing', 500);
+      // Use a different category name to avoid conflicts
+      const budget = await createTestBudget(testUserId, 'Housing2', 500);
       budgetId = budget.id;
     });
     
