@@ -81,16 +81,59 @@ const App: React.FC = () => {
   };
   
   const register = async (username: string, email: string, password: string) => {
-    // For demo purposes, any registration succeeds
-    // In a real app, this would call your API
-    setCurrentUser({ email, username });
-    setIsAuthenticated(true);
-    return { success: true };
+    try {
+      // Call backend registration API
+      const response = await api.post<{ 
+        user: { 
+          email: string; 
+          username: string; 
+          id: string 
+        }; 
+        token: string;
+        message: string;
+      }>('/auth/register', { username, email, password });
+  
+      // Store the authentication token
+      storageUtils.storeAuthToken(response.token);
+  
+      // Set the auth header for future requests
+      api.setAuthHeader(response.token);
+  
+      // Set current user and authentication state
+      setCurrentUser(response.user);
+      setIsAuthenticated(true);
+  
+      return { 
+        success: true, 
+        message: 'Registration successful' 
+      };
+    } catch (error) {
+      // Handle registration errors
+      console.error('Registration error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Registration failed' 
+      };
+    }
   };
   
   const logout = () => {
+    // Clear user data
     setCurrentUser(null);
     setIsAuthenticated(false);
+    
+    // Clear the auth token (using the method you have available)
+    // If you don't have a specific removal method, you can store an empty string
+    storageUtils.storeAuthToken('');
+    
+    // Remove auth header from API
+    // If this method doesn't exist, you can omit this line
+    if (typeof api.removeAuthHeader === 'function') {
+      api.removeAuthHeader();
+    } else {
+      // Alternative: set auth header to empty
+      api.setAuthHeader('');
+    }
   };
   
   // Simple ProtectedRoute component
