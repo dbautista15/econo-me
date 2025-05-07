@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 import { databaseManager } from '../utils/db';
 import { QueryResult } from 'pg';
 import { 
-  User
+  User, AuthenticatedRequest
 } from '../types';
 
 interface UserWithPassword extends User {
@@ -35,6 +35,13 @@ createUserTable();
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   const { username, email, password } = req.body;
+  
+  // Validate required fields
+  if (!username || !email || !password) {
+    res.status(400).json({ message: 'Username, email, and password are required' });
+    return;
+  }
+  
   const pool = databaseManager.getPool();
 
   try {
@@ -57,13 +64,18 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
     // Insert user into database
     const result: QueryResult<User> = await pool.query(
-      'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email',
+      'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email, created_at',
       [username, email, hashedPassword]
     );
 
     // Create JWT token
     const token = jwt.sign(
-      { id: result.rows[0].id, email: result.rows[0].email },
+      { 
+        id: result.rows[0].id, 
+        email: result.rows[0].email,
+        username: result.rows[0].username,
+        created_at: result.rows[0].created_at
+      },
       process.env.JWT_SECRET || 'your-default-secret-key',
       { expiresIn: '1h' }
     );
@@ -85,6 +97,13 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
 export const login = async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body;
+  
+  // Validate required fields
+  if (!email || !password) {
+    res.status(400).json({ message: 'Email and password are required' });
+    return;
+  }
+  
   const pool = databaseManager.getPool();
 
   try {
@@ -110,7 +129,12 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     // Create JWT token
     const token = jwt.sign(
-      { id: user.id, email: user.email },
+      { 
+        id: user.id, 
+        email: user.email,
+        username: user.username,
+        created_at: user.created_at
+      },
       process.env.JWT_SECRET || 'your-default-secret-key',
       { expiresIn: '1h' }
     );
@@ -123,9 +147,25 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         username: user.username,
         email: user.email
       }
-    });  
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error during login' });
+  }
+};
+
+// Required for 'should return user budgets when authenticated' test
+export const getUserData = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    res.status(200).json({
+      user: {
+        id: req.user.id,
+        username: req.user.username,
+        email: req.user.email
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error fetching user data' });
   }
 };

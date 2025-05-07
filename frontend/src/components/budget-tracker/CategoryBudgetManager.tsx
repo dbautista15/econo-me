@@ -303,7 +303,7 @@ export const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
         <div className="space-y-6">
           <div className="mt-2 mb-4">
             <p className="text-sm text-gray-600">
-              Set budget limits for each spending category. Progress bars show how much of each budget has been used.
+              Set budget limits for each spending category. Progress bars show how much of each budget has been used. For a better experience use the tab key on your keyboard to fill out the budgets!
             </p>
           </div>
 
