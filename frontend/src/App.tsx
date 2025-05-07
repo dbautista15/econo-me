@@ -1,111 +1,186 @@
-// App.tsx
-import React, { useState, useEffect } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-
-// Context Providers
-import { AuthProvider } from './context/AuthContext';
-import { CategoryProvider } from './context/CategoryContext';
-
-// Components - Auth
-import {Login} from './components/auth/Login';
-import {Register} from './components/auth/Registration';
-import ProtectedRoute from './components/auth/ProtectedRoute';
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import './styles/App.css'
 
 // Components - Layout
-import { Header, Navigation, Footer, NotificationMessage } from '../../frontend/src/components/ui/';
+import { Header } from './components/layout/Header';
+import { Footer } from './components/layout/Footer';
+import { Navigation } from './components/layout/Navigation';
 
-// Features
-import DashboardContainer from './components/containers/DashboardContainer';
-//import Settings from '../src/components/settings/settings'; // You'll need to create this component
+// Auth Components
+import AuthPage from './components/auth/AuthPage';
+import { storageUtils } from './utils';
+import api from './utils/api';
+// Dashboard Components
+import UnifiedDashboard from './components/dashboard/UnifiedDashboard';
 
-// Styles
-import './styles/App.css';
-import './styles/index.css';
-import { TabType,MessageType } from '../../types';
+// Notifications
+import Notification from './components/layout/ui/Notification';
 
 const App: React.FC = () => {
-    const [activeTab, setActiveTab] = useState<TabType>('dashboard');
-    const [successMessage, setSuccessMessage] = useState<string>('');
-    const [errorMessage, setErrorMessage] = useState<string>('');
-    const location = useLocation();
-    
-    // Update activeTab based on URL
-    useEffect(() => {
-        console.log('Current location:', location.pathname);
-        const path = location.pathname;
+  // State management without context
+  const [activeTab, setActiveTab] = useState<'UnifiedDashboard' | 'settings'>('UnifiedDashboard');
+
+  // Authentication state - temporary solution without context
+  // In a real app, you'd want to use localStorage or similar to persist this
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  
+  // Notification system
+  const [notification, setNotification] = useState<{
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+  } | null>(null);
+  
+  // Show success message
+  const handleSuccessMessage = (message: string) => {
+    setNotification({ message, type: 'success' });
+    setTimeout(() => setNotification(null), 5000);
+  };
+  
+  // Show error message
+  const handleErrorMessage = (message: string) => {
+    setNotification({ message, type: 'error' });
+    setTimeout(() => setNotification(null), 5000);
+  };
+  
+  const login = async (email: string, password: string) => {
+    try {
+      // Actual API call to login endpoint
+      const response = await api.post<{ 
+        user: { 
+          email: string; 
+          username: string; 
+          id: string 
+        }; 
+        token: string 
+      }>('/auth/login', { email, password });
+  
+      // Store the authentication token
+      storageUtils.storeAuthToken(response.token);
+  
+      // Set the auth header for future requests
+      api.setAuthHeader(response.token);
+  
+      // Set current user and authentication state
+      setCurrentUser(response.user);
+      setIsAuthenticated(true);
+  
+      return { 
+        success: true, 
+        message: 'Login successful' 
+      };
+    } catch (error) {
+      // Handle login errors
+      console.error('Login error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Login failed' 
+      };
+    }
+  };
+  
+  const register = async (username: string, email: string, password: string) => {
+    // For demo purposes, any registration succeeds
+    // In a real app, this would call your API
+    setCurrentUser({ email, username });
+    setIsAuthenticated(true);
+    return { success: true };
+  };
+  
+  const logout = () => {
+    setCurrentUser(null);
+    setIsAuthenticated(false);
+  };
+  
+  // Simple ProtectedRoute component
+  const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+    if (!isAuthenticated) {
+      return <Navigate to="/login" />;
+    }
+    return <>{children}</>;
+  };
+
+  return (
+    <Router>
+      <div className="App min-h-screen flex flex-col">
+        {/* Provide auth-related props directly to Header */}
+        <Header 
+          currentUser={currentUser}
+          logout={logout}
+          isAuthenticated={isAuthenticated}
+        />
         
-        if (path.includes('/dashboard')) {
-            console.log('Setting active tab to dashboard');
-            setActiveTab('dashboard');
-        } else if (path.includes('/settings')) {
-            console.log('Setting active tab to settings');
-            setActiveTab('settings');
-        }
-    }, [location]);
-    
-    // Show notification messages
-    const showMessage = (message: string, type: MessageType): void => {
-        if (type === 'success') {
-            setSuccessMessage(message);
-            setTimeout(() => setSuccessMessage(''), 3003);
-        } else {
-            setErrorMessage(message);
-            setTimeout(() => setErrorMessage(''), 3003);
-        }
-    };
-
-    return (
-        <AuthProvider>
-            <CategoryProvider>
-                <div className="flex flex-col min-h-screen">
-                    <Header />
-                    <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
-
-                    <main className="container mx-auto px-4 py-8 flex-grow">
-                        {successMessage && (
-                            <NotificationMessage message={successMessage} type="success" />
-                        )}
-
-                        {errorMessage && (
-                            <NotificationMessage message={errorMessage} type="error" />
-                        )}
-
-                        <Routes>
-                            <Route path="/" element={<Navigate to="/dashboard" />} />
-                            <Route path="/login" element={<Login />} />
-                            <Route path="/register" element={<Register />} />
-                            
-                            <Route
-                                path="/dashboard"
-                                element={
-                                    <ProtectedRoute>
-                                        <DashboardContainer 
-                                            onSuccessMessage={(msg: string) => showMessage(msg, 'success')}
-                                            onErrorMessage={(msg: string) => showMessage(msg, 'error')}
-                                        />
-                                    </ProtectedRoute>
-                                }
-                            />
-                            
-                            {/* <Route
-                                path="/settings"
-                                element={
-                                    <ProtectedRoute>
-                                        <Settings 
-                                            onSuccessMessage={(msg: string) => showMessage(msg, 'success')}
-                                            onErrorMessage={(msg: string) => showMessage(msg, 'error')}
-                                        />
-                                    </ProtectedRoute>
-                                }
-                            /> */}
-                        </Routes>
-                    </main>
-
-                    <Footer />
-                </div>
-            </CategoryProvider>
-        </AuthProvider>
-    );
+        {/* Provide auth-related props directly to Navigation */}
+        <Navigation 
+          activeTab={activeTab} 
+          setActiveTab={setActiveTab}
+          isAuthenticated={isAuthenticated}
+        />
+        
+        {/* Show notification if exists */}
+        {notification && (
+          <div className="container mx-auto px-4 mt-4">
+            <Notification
+              type={notification.type}
+              message={notification.message}
+              onClose={() => setNotification(null)}
+            />
+          </div>
+        )}
+        
+        <main className="flex-grow">
+          <Routes>
+            <Route 
+              path="/login" 
+              element={
+                <AuthPage 
+                  mode="login"
+                  onLogin={login}
+                  onRegister={register}
+                />
+              } 
+            />
+            <Route 
+              path="/register" 
+              element={
+                <AuthPage 
+                  mode="register"
+                  onLogin={login}
+                  onRegister={register}
+                />
+              } 
+            />
+            <Route 
+              path="/UnifiedDashboard" 
+              element={
+                <ProtectedRoute>
+                  <UnifiedDashboard
+                    onSuccessMessage={handleSuccessMessage}
+                    onErrorMessage={handleErrorMessage}
+                  />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/settings" 
+              element={
+                <ProtectedRoute>
+                  <div className="container mx-auto p-4">
+                    <h1 className="text-2xl font-bold mb-4">Settings</h1>
+                    <p>Settings page is under construction.</p>
+                  </div>
+                </ProtectedRoute>
+              } 
+            />
+            <Route path="/" element={<Navigate to="/UnifiedDashboard" />} />
+          </Routes>
+        </main>
+        
+        <Footer />
+      </div>
+    </Router>
+  );
 };
 
 export default App;

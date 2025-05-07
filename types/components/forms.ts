@@ -11,12 +11,6 @@ export interface FormField {
   minLength?: number;
 }
 
-export interface FormErrors {
-  amount?: string;
-  date?: string;
-  [key: string]: string | undefined;
-}
-
 export interface AuthFormProps {
   title: string;
   fields: FormField[];

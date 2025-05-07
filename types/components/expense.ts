@@ -1,10 +1,8 @@
-import { Expense, CategorySummary, ExpenseForm } from '../domain/finance';
-import { FormErrors } from './forms';
-/**
- * Expense component props
- */
+import { Expense, CategorySummary,ExpenseForm } from '../domain/finance';
 
-export interface ExpenseTrackerProps {
+import { FormErrors } from '../../types/domain/finance';
+
+export interface ExpenseManager {
   expenses?: Expense[];
   expensesByCategory?: CategorySummary;
   colors?: string[];
@@ -16,15 +14,17 @@ export interface ExpenseDistributionProps {
   totalExpenses: number;
 }
 
-export interface ExpenseFilter {
-  startDate: string;
-  endDate: string;
-  category: string;
+export interface ExpenseFilterTypeProps {
+  startDate?: string;
+  endDate?: string;
+  category?: string;
+  minAmount?: number;
+  maxAmount?: number;
 }
 
-export interface ExpenseFilterProps {
-  filter: ExpenseFilter;
-  setFilter: (filter: ExpenseFilter) => void;
+export interface ExpenseFilterType {
+  filter: ExpenseFilterTypeProps;
+  setFilter: (filter: ExpenseFilterTypeProps) => void;
   categories: string[];
 }
 
@@ -47,4 +47,33 @@ export interface DeleteExpensesProps {
 export interface DeletionResults {
   success: number;
   failed: number;
+  total: number;
+  successfulIds?: number[];
+  failedIds?: number[];
+}
+
+// New interface for expense tracking and analysis
+export interface ExpenseAnalytics {
+  totalSpent: number;
+  averageExpense: number;
+  expensesByCategory: CategorySummary;
+  monthlyTrends: {
+    month: string;
+    total: number;
+  }[];
+}
+
+// Interface for bulk expense operations
+export interface BulkExpenseOperations {
+  bulkAdd?: (expenses: ExpenseForm[]) => Promise<boolean>;
+  bulkDelete?: (ids: number[]) => Promise<DeletionResults>;
+  bulkUpdate?: (expenses: Expense[]) => Promise<boolean>;
+}
+
+// Enhanced expense filtering interface
+export interface AdvancedExpenseFilter extends ExpenseFilterTypeProps {
+  sortBy?: keyof Expense;
+  sortOrder?: 'asc' | 'desc';
+  page?: number;
+  pageSize?: number;
 }

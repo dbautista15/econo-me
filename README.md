@@ -55,7 +55,7 @@ DELETE /api/transactions/:id - Delete transaction
 Budgets
 
 GET /api/budgets - Get all budgets
-POST /api/budgets - Create new budget
+POST /api/budgets/:id - Create new budget
 PUT /api/budgets/:id - Update budget
 DELETE /api/budgets/:id - Delete budget
 

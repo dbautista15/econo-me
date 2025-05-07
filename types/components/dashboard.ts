@@ -1,11 +1,11 @@
 import { Expense, Income, CategorySummary, Suggestion,SavingsGoal} from '../domain/finance';
-import type { ExpenseFilter } from './expense'; // Import the type from expense.ts instead of the component
+import type { ExpenseFilterType } from './expense'; // Import the type from expense.ts instead of the component
 
 /**
  * Dashboard component props
  */
 
-export interface DashboardProps {
+export interface UnifiedDashboard {
   // Financial data
   income: number;
   incomes: Income[];
@@ -16,7 +16,7 @@ export interface DashboardProps {
   expensesByCategory: CategorySummary;
   categoryBudgets: Record<string, number>;
   loading: boolean;
-  filter: ExpenseFilter;
+  filter: ExpenseFilterType;
   filteredExpenses: Expense[];
   totalExpenses: number;
   savings: number;
@@ -28,7 +28,7 @@ export interface DashboardProps {
   
   // Functions
   fetchData: () => Promise<void>;
-  setFilter: (filter: ExpenseFilter) => void;
+  setFilter: (filter: ExpenseFilterType) => void;
   
   // Message callbacks
   onSuccessMessage: (msg: string) => void;
@@ -36,25 +36,17 @@ export interface DashboardProps {
 }
 
 
-export interface DashboardContainerProps {
+export interface UnifiedDashboard {
   onSuccessMessage: (msg: string) => void;
   onErrorMessage: (msg: string) => void;
 }
 
-export interface FinancialSummaryProps {
-  income: number;
-  totalExpenses: number;
-  savings: number;
-  budgetPercentage: number;
-  isOverBudget: boolean;
-  savingsProgress: number;
-  savingsGoal: number;
-  incomes?: Income[];
-  onAddIncome?: (amount: number, date: string) => Promise<boolean> | void;
-  onDeleteIncome?: (id: number) => Promise<boolean>;
+export interface UnifiedDashboardProps {
+  onSuccessMessage: (message: string) => void;
+  onErrorMessage: (message: string) => void;
 }
 
-export interface FinancialInsightsProps {
+export interface FinancialOverview {
   expensesByCategory: CategorySummary;
   totalExpenses: number;
   income: number;

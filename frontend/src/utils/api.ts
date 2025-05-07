@@ -1,8 +1,7 @@
 // utils/api.ts - Updated with auth header methods
 
 // Import response types
-import { ApiSuccess, ApiError } from '../../../types';
-
+import {ApiSuccess, ApiError} from '../../../types/api/responses'
 // Define base URL based on environment
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5003/api';
 

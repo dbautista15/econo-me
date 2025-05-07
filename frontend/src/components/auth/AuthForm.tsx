@@ -1,7 +1,8 @@
 import React, { FormEvent, ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { ErrorAlert } from '../ui';
-import { FormField } from '../common/FormField';
+
+import Notification from '../layout/ui/Notification';
+import { FormField } from '../dashboard/common/FormField';
 
 export interface AuthField {
   id: string;
@@ -12,7 +13,7 @@ export interface AuthField {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   required?: boolean;
   minLength?: number;
-  error?: string;
+  error: string;
 }
 
 export interface AuthFormProps {
@@ -20,7 +21,7 @@ export interface AuthFormProps {
   fields: AuthField[];
   onSubmit: (e: FormEvent<HTMLFormElement>) => void;
   submitButtonText: string;
-  error?: string;
+  error: string;
   footerText: string;
   footerLinkText: string;
   footerLinkTo: string;
@@ -43,7 +44,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <h1 className="text-2xl font-bold mb-6 text-center">{title}</h1>
         
-        {error && <ErrorAlert message={error} />}
+        {error && <Notification message={error} />}
         
         <form onSubmit={onSubmit}>
           {fields.map((field) => (

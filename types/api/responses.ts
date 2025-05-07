@@ -2,6 +2,7 @@ export interface QueryResultRow {}
 export interface QueryResult<T> {}
 import { User } from "../domain/user";
 import { Expense,Income,SavingsGoal,Budget } from "../domain/finance";
+
 export type DatabaseResponse<T extends QueryResultRow> = Promise<QueryResult<T>>;
 
 export interface ApiSuccess<T> {

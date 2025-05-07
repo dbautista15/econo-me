@@ -1,7 +1,8 @@
-import { ExpenseForm, FormErrors } from '../../../types';
 import { transformations } from './transformations';
+import { ExpenseForm, FormErrors } from '../../../types/domain/finance';
 
-/**
+
+/*
  * Common validation rules for financial data
  */
 export const validators = {

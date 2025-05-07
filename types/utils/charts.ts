@@ -9,6 +9,7 @@ export interface CategoryData {
   
   export interface CategoryBreakdownChartProps {
 	pieChartData: CategoryData[];
+	onSuccess?: (message: string) => void;
 	colors: string[];
   }
   
