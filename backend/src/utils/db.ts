@@ -8,13 +8,19 @@ class DatabaseManager {
   private pool: Pool;
 
   constructor() {
+
+    const dbName = process.env.NODE_ENV === 'test' ? 'econo_me_test' : 'econo_me';
+
+
     // PostgreSQL Connection Pool
+    const isProd = process.env.NODE_ENV === 'production';
+    const connectionString = isProd ? process.env.PROD_DATABASE_URL : process.env.DEV_DATABASE_URL;
+    
     this.pool = new Pool({
-      connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/econo-me',
-      ssl: process.env.NODE_ENV === 'production' ? {
-        rejectUnauthorized: false 
-      } : undefined
+      connectionString,
+      ssl: isProd ? { rejectUnauthorized: false } : false
     });
+  
 
     // Error handler for unexpected pool errors
     this.pool.on('error', (err) => {

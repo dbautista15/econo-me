@@ -136,10 +136,7 @@ export interface SavingsGoalRequest {
   target_date?: string | null;
 }
 
-export interface BudgetRequest {
-  category: string;
-  limit: number;
-}
+
 
 export interface BulkDeleteRequest {
   ids: number[];

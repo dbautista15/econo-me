@@ -56,7 +56,7 @@ router.post('/expenses/bulk-delete', authMiddleware, wrapAuthenticatedHandler(co
 
 // Budget routes
 router.post('/budgets', authMiddleware, wrapAuthenticatedHandler(controllers.createBudget));
-router.get('/budgets', authMiddleware, wrapAuthenticatedHandler(controllers.getBudgets));
+router.get('/budgets/', authMiddleware, wrapAuthenticatedHandler(controllers.getBudgets));
 router.put('/budgets/:id', authMiddleware, wrapAuthenticatedHandler(controllers.updateBudget));
 router.delete('/budgets/:id', authMiddleware, wrapAuthenticatedHandler(controllers.deleteBudget));
 
