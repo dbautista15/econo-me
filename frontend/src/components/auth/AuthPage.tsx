@@ -297,7 +297,7 @@ const AuthPage: React.FC<AuthPageProps> = ({
   const footerText = currentMode === 'login' 
     ? "Don't have an account?" 
     : "Already have an account?";
-  const footerLinkText = currentMode === 'login' ? 'Register' : 'Login';
+  const footerLinkText = currentMode === 'login' ? 'Register' : '/Login';
   const footerLinkTo = currentMode === 'login' ? '/register' : '/login';
 
   return (
