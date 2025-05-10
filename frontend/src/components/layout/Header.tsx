@@ -14,7 +14,7 @@ export const Header: React.FC<HeaderProps> = ({ currentUser, isAuthenticated, lo
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold">Econo-me</h1>
-            <p className="text-blue-100">Your Personal Finance Manager</p>
+            <p className="text-blue-100">Your Personal Finance Manager: Hola madre soy yo!!</p>
           </div>
           <div>
             {isAuthenticated && currentUser ? (
